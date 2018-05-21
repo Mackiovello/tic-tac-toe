@@ -1,6 +1,7 @@
 use std::io::{self, BufRead};
 
 fn main() {
+    let board = Board::new();
     let coordinate: Coordinate = get_coordinate_from_user();
     println!("{} {}", coordinate.x, coordinate.y);
     print_board();
@@ -41,9 +42,16 @@ fn read_line() -> String {
 }
 
 struct Board {
-    grid: Vec<Vec<u8>>
+    grid: Vec<Vec<CoordinateValue>>
 }
 
+impl Board {
+    fn new() -> Board {
+        Board { grid: vec![vec![CoordinateValue::Empty; 3]; 3]}
+    }
+}
+
+#[derive(Clone, Debug)]
 enum CoordinateValue {
     UserOne,
     UserTwo,
