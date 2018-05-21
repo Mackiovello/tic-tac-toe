@@ -1,13 +1,16 @@
 use std::io::{self, BufRead};
 
 fn main() {
-    let board = Board::new();
+    let mut board = Board::new();
+    let mut won: bool = false;
 
-
-
-    let mut new_board = add_value_to_board(board, Coordinate { x: 0, y: 0 }, CoordinateValue::UserOne);
-    new_board = add_value_to_board(new_board, Coordinate { x: 0, y: 2 }, CoordinateValue::UserOne);
-    print_board(new_board);
+    while !won {
+        let coordinate = get_coordinate_from_user();
+        board = add_value_to_board(board, coordinate, CoordinateValue::UserOne);
+        won = true;
+    }
+    
+    print_board(board);
 }
 
 fn add_value_to_board(mut board: Board, coordinate: Coordinate, coordinate_value: CoordinateValue) -> Board {
