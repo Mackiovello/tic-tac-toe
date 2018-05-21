@@ -2,10 +2,21 @@ use std::io::{self, BufRead};
 
 fn main() {
     let board = Board::new();
-    let coordinate: Coordinate = get_coordinate_from_user();
-    println!("{} {}", coordinate.x, coordinate.y);
-    print_board();
+
+    let new_board = add_value_to_board(board, Coordinate {x: 0, y: 0}, CoordinateValue::UserOne);
+    // println!("{:?}", new_board);
+
+    // let coordinate: Coordinate = get_coordinate_from_user();
+    // println!("{} {}", coordinate.x, coordinate.y);
+    // print_board();
 }
+
+fn add_value_to_board(board: Board, coordinate: Coordinate, coordinate_value: CoordinateValue) -> Board {
+    let mut new_board = Board::new();
+    println!("{:?}", new_board.grid[coordinate.x][coordinate.y]);
+    // new_board.grid[coordinate.x] = coordinate_value;
+    new_board
+} 
 
 fn get_coordinate_from_user() -> Coordinate {
     println!("Enter a coordinate in the format x,y:");
@@ -15,8 +26,8 @@ fn get_coordinate_from_user() -> Coordinate {
    
     let input = read_line();
     let vec = input.split(',').collect::<Vec<&str>>();
-    let x = vec[0].trim().parse::<u8>().unwrap();
-    let y = vec[1].trim().parse::<u8>().unwrap(); 
+    let x = vec[0].trim().parse::<usize>().unwrap();
+    let y = vec[1].trim().parse::<usize>().unwrap(); 
     Coordinate { x, y }
 }
 
@@ -41,12 +52,14 @@ fn read_line() -> String {
     line
 }
 
+#[derive(Debug)]
 struct Board {
     grid: Vec<Vec<CoordinateValue>>
 }
 
 impl Board {
     fn new() -> Board {
+        // TODO: This should not be a vector since it can't grow or shrink
         Board { grid: vec![vec![CoordinateValue::Empty; 3]; 3]}
     }
 }
@@ -59,6 +72,6 @@ enum CoordinateValue {
 }
 
 struct Coordinate {
-    x: u8,
-    y: u8
+    x: usize,
+    y: usize
 }
