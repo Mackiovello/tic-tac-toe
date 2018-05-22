@@ -1,4 +1,4 @@
-use std::io::{self, BufRead};
+mod user_input;
 
 fn main() {
     let mut board = Board::new();
@@ -7,7 +7,7 @@ fn main() {
     let mut current_user = CoordinateValue::UserOne;
 
     while !won {
-        let coordinate = get_coordinate_from_user();
+        let coordinate = user_input::get_coordinate_from_user();
         board = add_value_to_board(board, coordinate, current_user);
 
         current_user = match current_user {
@@ -36,22 +36,9 @@ fn is_winning_board(board: Board) -> (bool, Board) {
     (values.into_iter().filter(|x| *x == CoordinateValue::UserOne).count() == 3, board)
 }
 
-fn add_value_to_board(mut board: Board, coordinate: Coordinate, coordinate_value: CoordinateValue) -> Board {
+fn add_value_to_board(mut board: Board, coordinate: user_input::Coordinate, coordinate_value: CoordinateValue) -> Board {
     board.grid[coordinate.x][coordinate.y] = coordinate_value;
     board
-}
-
-fn get_coordinate_from_user() -> Coordinate {
-    println!("Enter a coordinate in the format x,y:");
-
-    // TODO: Add input validation and split validation
-    //       into a separate function
-
-    let input = read_line();
-    let vec = input.split(',').collect::<Vec<&str>>();
-    let x = vec[0].trim().parse::<usize>().unwrap();
-    let y = vec[1].trim().parse::<usize>().unwrap();
-    Coordinate { x, y }
 }
 
 fn print_board(board: Board) {
@@ -94,13 +81,6 @@ fn coordinate_value_to_sign(value: CoordinateValue) -> String {
     }.to_string()
 }
 
-fn read_line() -> String {
-    let mut line = String::new();
-    let stdin = io::stdin();
-    stdin.lock().read_line(&mut line).unwrap();
-    line
-}
-
 #[derive(Debug, Clone, Copy)]
 struct Board {
     grid: [[CoordinateValue; 3]; 3],
@@ -119,9 +99,4 @@ enum CoordinateValue {
     UserOne,
     UserTwo,
     Empty,
-}
-
-struct Coordinate {
-    x: usize,
-    y: usize,
 }
