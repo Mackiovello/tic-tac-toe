@@ -33,36 +33,42 @@ fn get_coordinate_from_user() -> Coordinate {
 
 fn print_board(board: Board) {
 
-    let v1 = coordinate_value_to_sign(board.grid[0][0]);
-    let v2 = coordinate_value_to_sign(board.grid[1][0]);
-    let v3 = coordinate_value_to_sign(board.grid[2][0]);
-    let v4 = coordinate_value_to_sign(board.grid[0][1]);
-    let v5 = coordinate_value_to_sign(board.grid[1][1]);
-    let v6 = coordinate_value_to_sign(board.grid[2][1]);
-    let v7 = coordinate_value_to_sign(board.grid[0][2]);
-    let v8 = coordinate_value_to_sign(board.grid[1][2]);
-    let v9 = coordinate_value_to_sign(board.grid[2][2]);
+    let mut values: Vec<String> = Vec::new();
+
+    for (i, _) in board.grid.iter().enumerate() {
+        for (j, _) in board.grid[i].iter().enumerate() {
+            values.push(coordinate_value_to_sign(board.grid[j][i]))
+        }
+    }
 
     println!(
-        "             0     1     2
-                |     |
-          0  {}  |  {}  |  {}
-           _____|_____|_____
-                |     |
-          1  {}  |  {}  |  {}
-           _____|_____|_____
-                |     |
-          2  {}  |  {}  |  {}
-                |     |     "
-    , v1, v2, v3, v4, v5, v6, v7, v8, v9);
+"      0     1     2
+         |     |
+  0  {}   |  {}  |  {}
+    _____|_____|_____
+         |     |
+  1  {}   |  {}  |  {}
+    _____|_____|_____
+         |     |
+  2  {}   |  {}  |  {}
+         |     |     ",  
+    values[0], 
+    values[1], 
+    values[2], 
+    values[3], 
+    values[4], 
+    values[5], 
+    values[6],
+    values[7], 
+    values[8]);
 }
 
-fn coordinate_value_to_sign(value: CoordinateValue) -> &'static str {
+fn coordinate_value_to_sign(value: CoordinateValue) -> String {
     match value {
         CoordinateValue::UserOne => "O",
         CoordinateValue::UserTwo => "X",
         CoordinateValue::Empty => "-"
-    }
+    }.to_string()
 }
 
 fn read_line() -> String {
