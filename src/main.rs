@@ -4,13 +4,36 @@ fn main() {
     let mut board = Board::new();
     let mut won: bool = false;
 
+    let mut current_user = CoordinateValue::UserOne;
+
     while !won {
         let coordinate = get_coordinate_from_user();
-        board = add_value_to_board(board, coordinate, CoordinateValue::UserOne);
-        won = true;
+        board = add_value_to_board(board, coordinate, current_user);
+
+        current_user = match current_user {
+            CoordinateValue::UserOne => CoordinateValue::UserTwo,
+            CoordinateValue::UserTwo => CoordinateValue::UserOne,
+            _ => panic!("NOPE")
+        };
+
+        let (game_over, new_board) = is_winning_board(board);
+        won = game_over;
+        board = new_board;
+        print_board(board);
     }
-    
-    print_board(board);
+}
+
+// Dummy implementation - should change
+fn is_winning_board(board: Board) -> (bool, Board) {
+    let mut values: Vec<CoordinateValue> = Vec::new();
+
+    for (i, _) in board.grid.iter().enumerate() {
+        for (j, _) in board.grid[i].iter().enumerate() {
+            values.push(board.grid[j][i])
+        }
+    }
+
+    (values.into_iter().filter(|x| *x == CoordinateValue::UserOne).count() == 3, board)
 }
 
 fn add_value_to_board(mut board: Board, coordinate: Coordinate, coordinate_value: CoordinateValue) -> Board {
@@ -78,7 +101,7 @@ fn read_line() -> String {
     line
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct Board {
     grid: [[CoordinateValue; 3]; 3],
 }
@@ -91,7 +114,7 @@ impl Board {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 enum CoordinateValue {
     UserOne,
     UserTwo,
