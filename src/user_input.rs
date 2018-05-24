@@ -19,10 +19,35 @@ impl PartialEq for Coordinate {
 }
 
 fn parse_user_input(input: String) -> Result<Coordinate, String> {
+    if input.trim().is_empty() { 
+        return Err("The input can't be empty".to_string());
+    }
+
     let vec = input.split(',').collect::<Vec<&str>>();
-    let x = vec[0].trim().parse::<usize>().unwrap();
-    let y = vec[1].trim().parse::<usize>().unwrap();
-    Ok(Coordinate { x, y })
+
+    if vec.len() > 2 {
+        return Err("You can only pass two values".to_string());
+    }
+
+    if vec.len() == 1 {
+        return Err("You have to pass two values".to_string());
+    }
+
+    let x_result = vec[0].trim().parse::<usize>();
+    let y_result = vec[1].trim().parse::<usize>();
+
+    if x_result.is_ok() && y_result.is_ok() {
+        let x = x_result.unwrap();
+        let y = y_result.unwrap();
+
+        if x > 2 || y > 2 {
+            return Err("Value can't be larger than 2".to_string());
+        }
+
+        return Ok(Coordinate { x, y });
+    }
+
+    Err("The value can't be smaller than 0".to_string())
 }
 
 fn read_line() -> String {
@@ -58,5 +83,29 @@ mod input_parsing_tests {
     fn comma_without_space_works() {
         let result = parse_user_input(String::from("1,1"));
         assert_eq!(result.unwrap(), Coordinate { x: 1, y: 1 });
+    }
+
+    #[test]
+    fn too_many_values_gives_error() {
+        let result = parse_user_input(String::from("1,1,1"));
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn negative_values_give_error() {
+        let result = parse_user_input(String::from("-1,1"));
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn too_large_values_give_error() {
+        let result = parse_user_input(String::from("3,5"));
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn only_one_value_give_error() {
+        let result = parse_user_input(String::from("1"));
+        assert_eq!(result.is_err(), true);
     }
 }
