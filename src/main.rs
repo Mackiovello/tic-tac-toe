@@ -13,10 +13,10 @@ fn main() {
         current_user = match current_user {
             CoordinateValue::UserOne => CoordinateValue::UserTwo,
             CoordinateValue::UserTwo => CoordinateValue::UserOne,
-            _ => panic!("NOPE")
+            _ => panic!("That option is optional")
         };
 
-        let (game_over, new_board) = is_winning_board(board);
+        let (game_over, new_board) = is_winning_board_old(board);
         won = game_over;
         board = new_board;
         print_board(board);
@@ -24,7 +24,7 @@ fn main() {
 }
 
 // Dummy implementation - should change
-fn is_winning_board(board: Board) -> (bool, Board) {
+fn is_winning_board_old(board: Board) -> (bool, Board) {
     let mut values: Vec<CoordinateValue> = Vec::new();
 
     for (i, _) in board.grid.iter().enumerate() {
@@ -34,6 +34,24 @@ fn is_winning_board(board: Board) -> (bool, Board) {
     }
 
     (values.into_iter().filter(|x| *x == CoordinateValue::UserOne).count() == 3, board)
+}
+
+fn is_winning_board(board: Board) -> bool {
+    // if is_row_win(board) { return true }
+    is_row_win(board)
+}
+
+fn is_row_win(board: Board) -> bool {
+    for row in board.grid.iter() {
+        let mut iter_row = row.into_iter();
+        let win = iter_row.all(|&x| x == CoordinateValue::UserOne) ||
+                     iter_row.all(|&x| x == CoordinateValue::UserTwo);
+        
+        if win {
+            return true;      
+        } 
+    }
+    false
 }
 
 fn add_value_to_board(mut board: Board, coordinate: user_input::Coordinate, coordinate_value: CoordinateValue) -> Board {
@@ -99,4 +117,77 @@ enum CoordinateValue {
     UserOne,
     UserTwo,
     Empty,
+}
+
+#[cfg(test)]
+mod win_condition_tests {
+    use super::*;
+
+    #[test]
+    fn empty_board_is_no_win() {
+        let board = Board {
+            grid: [[CoordinateValue::Empty; 3]; 3]
+        };
+        assert_eq!(is_winning_board(board), false);
+    }
+
+    #[test]
+    fn complete_row_is_win() {
+        let board = Board {
+            grid: [
+                [CoordinateValue::UserOne; 3], 
+                [CoordinateValue::Empty; 3], 
+                [CoordinateValue::Empty; 3]
+            ]
+        };
+        assert_eq!(is_winning_board(board), true);
+    }
+
+    #[test]
+    fn diagonal_is_win() {
+        let board = Board {
+            grid: [
+                [CoordinateValue::UserOne, CoordinateValue::Empty, CoordinateValue::Empty],
+                [CoordinateValue::Empty, CoordinateValue::UserOne, CoordinateValue::Empty],
+                [CoordinateValue::Empty, CoordinateValue::Empty, CoordinateValue::UserOne],                
+            ]
+        };
+        assert_eq!(is_winning_board(board), true);
+    }
+
+    #[test]
+    fn complete_column_is_win() {
+        let board = Board {
+            grid: [
+                [CoordinateValue::UserOne, CoordinateValue::Empty, CoordinateValue::Empty],
+                [CoordinateValue::UserOne, CoordinateValue::Empty, CoordinateValue::Empty],
+                [CoordinateValue::UserOne, CoordinateValue::Empty, CoordinateValue::Empty],
+            ]
+        };
+        assert_eq!(is_winning_board(board), true);
+    }
+
+    #[test]
+    fn combined_row_is_no_win() {
+        let board = Board {
+            grid: [
+                [CoordinateValue::UserOne, CoordinateValue::UserTwo, CoordinateValue::UserTwo],
+                [CoordinateValue::Empty, CoordinateValue::Empty, CoordinateValue::Empty],
+                [CoordinateValue::Empty, CoordinateValue::Empty, CoordinateValue::Empty],
+            ]
+        };
+        assert_eq!(is_winning_board(board), false);
+    }
+
+    #[test]
+    fn combined_column_is_no_win() {
+        let board = Board {
+            grid: [
+                [CoordinateValue::UserOne, CoordinateValue::Empty, CoordinateValue::Empty],
+                [CoordinateValue::UserTwo, CoordinateValue::Empty, CoordinateValue::Empty],
+                [CoordinateValue::UserOne, CoordinateValue::Empty, CoordinateValue::Empty],
+            ]
+        };
+        assert_eq!(is_winning_board(board), false);
+    }
 }
