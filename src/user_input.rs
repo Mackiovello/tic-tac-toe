@@ -1,24 +1,12 @@
 use std::io::{self, BufRead};
 
-pub fn get_coordinate_from_user() -> Coordinate {
+pub fn get_coordinate_from_user() -> (usize, usize) {
     println!("Enter a coordinate in the format x,y:");
     let input = read_line();
     parse_user_input(input).unwrap()
 }
 
-#[derive(Debug)]
-pub struct Coordinate {
-    pub x: usize,
-    pub y: usize,
-}
-
-impl PartialEq for Coordinate {
-    fn eq(&self, other: &Coordinate) -> bool {
-        self.x == other.x && self.y == other.y
-    }
-}
-
-fn parse_user_input(input: String) -> Result<Coordinate, String> {
+fn parse_user_input(input: String) -> Result<(usize, usize), String> {
     if input.trim().is_empty() { 
         return Err("The input can't be empty".to_string());
     }
@@ -44,7 +32,7 @@ fn parse_user_input(input: String) -> Result<Coordinate, String> {
             return Err("Value can't be larger than 2".to_string());
         }
 
-        return Ok(Coordinate { x, y });
+        return Ok((x, y));
     }
 
     Err("The value can't be smaller than 0".to_string())
@@ -76,13 +64,13 @@ mod input_parsing_tests {
     #[test]
     fn comma_with_space_works() {
         let result = parse_user_input(String::from("1, 1"));
-        assert_eq!(result.unwrap(), Coordinate { x: 1, y: 1 });
+        assert_eq!(result.unwrap(), (1, 1));
     }
 
     #[test]
     fn comma_without_space_works() {
         let result = parse_user_input(String::from("1,1"));
-        assert_eq!(result.unwrap(), Coordinate { x: 1, y: 1 });
+        assert_eq!(result.unwrap(), (1, 1));
     }
 
     #[test]
