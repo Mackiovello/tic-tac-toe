@@ -11,7 +11,7 @@ fn main() {
     let mut current_user = Player::One;
 
     while !won {
-        // TODO: Write out the current player
+        println!("The current player is {}", current_user);
         let coordinate = user_input::get_coordinate_from_user();
 
         match add_value_to_board(board, coordinate, current_user) {
@@ -34,7 +34,7 @@ fn main() {
         println!("{}", board);
     }
 
-    // TODO: Print out the winner
+    println!("{} won!", current_user);
 }
 
 fn is_winning_board(board: Board) -> bool {
@@ -163,6 +163,18 @@ enum Player {
     One,
     Two,
     Empty,
+}
+
+impl fmt::Display for Player {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // Customize so only `x` and `y` are denoted.
+        let to_print = match self {
+            &Player::One => "player one",
+            &Player::Two => "player two",
+            &Player::Empty => panic!("Can't print for no player")
+        };
+        write!(f, "{}", to_print)
+    }
 }
 
 #[cfg(test)]
