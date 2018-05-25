@@ -6,16 +6,24 @@ fn main() {
     let mut board = Board::new();
     let mut won: bool = false;
 
-    let mut current_user = Users::UserOne;
+    let mut current_user = Player::One;
 
     while !won {
         // TODO: Write out the current player
         let coordinate = user_input::get_coordinate_from_user();
-        board = add_value_to_board(board, coordinate, current_user);
+
+        match add_value_to_board(board, coordinate, current_user) {
+            Ok(b) => board = b,
+            Err(e) => {
+                println!("{}", e);
+                print_board(board);
+                continue
+            }
+        }
 
         current_user = match current_user {
-            Users::UserOne => Users::UserTwo,
-            Users::UserTwo => Users::UserOne,
+            Player::One => Player::Two,
+            Player::Two => Player::One,
             _ => panic!("That option is not possible")
         };
 
@@ -34,8 +42,8 @@ fn is_winning_board(board: Board) -> bool {
 fn is_diagonal_win(board: Board) -> bool {
     let grid = board.grid;
 
-    let mut right_diagonal: Vec<Users> = Vec::new();
-    let mut left_diagonal: Vec<Users> = Vec::new();
+    let mut right_diagonal: Vec<Player> = Vec::new();
+    let mut left_diagonal: Vec<Player> = Vec::new();
     for x in 0..3 {
         right_diagonal.push(grid[x][x]);
         left_diagonal.push(grid[x][2-x]);
@@ -47,10 +55,10 @@ fn is_diagonal_win(board: Board) -> bool {
     let mut user_one_left = left_diagonal.clone().into_iter();
     let mut user_two_left = left_diagonal.clone().into_iter();    
 
-    user_one_right.all(|x| x == Users::UserOne) || 
-    user_two_right.all(|x| x == Users::UserTwo) ||
-    user_one_left.all(|x| x == Users::UserOne) ||
-    user_two_left.all(|x| x == Users::UserTwo)
+    user_one_right.all(|x| x == Player::One) || 
+    user_two_right.all(|x| x == Player::Two) ||
+    user_one_left.all(|x| x == Player::One) ||
+    user_two_left.all(|x| x == Player::Two)
 }
 
 fn is_column_win(board: Board) -> bool {
@@ -75,8 +83,8 @@ fn is_row_win(board: Board) -> bool {
         let mut iter_row_one = row.into_iter();
         let mut iter_row_two = row.into_iter();
 
-        let win = iter_row_one.all(|x| *x == Users::UserOne) ||
-                  iter_row_two.all(|x| *x == Users::UserTwo);
+        let win = iter_row_one.all(|x| *x == Player::One) ||
+                  iter_row_two.all(|x| *x == Player::Two);
         if win {
             return true;      
         } 
@@ -84,10 +92,14 @@ fn is_row_win(board: Board) -> bool {
     false
 }
 
-fn add_value_to_board(mut board: Board, coordinate: (usize, usize), coordinate_value: Users) -> Board {
-    // TODO: Check if the coordinate is already taken
-    board.grid[coordinate.0][coordinate.1] = coordinate_value;
-    board
+fn add_value_to_board(mut board: Board, coordinate: (usize, usize), player: Player) -> Result<Board, String> {
+    match board.grid[coordinate.0][coordinate.1] {
+        Player::One | Player::Two => Err("The field is already taken".to_string()),
+        Player::Empty => {
+            board.grid[coordinate.0][coordinate.1] = player;
+            Ok(board)
+        }
+    }
 }
 
 fn print_board(board: Board) {
@@ -123,31 +135,31 @@ fn print_board(board: Board) {
     values[8]);
 }
 
-fn user_to_sign(value: Users) -> String {
+fn user_to_sign(value: Player) -> String {
     match value {
-        Users::UserOne => "O",
-        Users::UserTwo => "X",
-        Users::Empty => "-"
+        Player::One => "O",
+        Player::Two => "X",
+        Player::Empty => "-"
     }.to_string()
 }
 
 #[derive(Debug, Clone, Copy)]
 struct Board {
-    grid: [[Users; 3]; 3],
+    grid: [[Player; 3]; 3],
 }
 
 impl Board {
     fn new() -> Board {
         Board {
-            grid: [[Users::Empty; 3]; 3],
+            grid: [[Player::Empty; 3]; 3],
         }
     }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-enum Users {
-    UserOne,
-    UserTwo,
+enum Player {
+    One,
+    Two,
     Empty,
 }
 
@@ -158,7 +170,7 @@ mod win_condition_tests {
     #[test]
     fn empty_board_is_no_win() {
         let board = Board {
-            grid: [[Users::Empty; 3]; 3]
+            grid: [[Player::Empty; 3]; 3]
         };
         assert_eq!(is_winning_board(board), false);
     }
@@ -167,9 +179,9 @@ mod win_condition_tests {
     fn complete_row_is_win() {
         let board = Board {
             grid: [
-                [Users::UserOne; 3], 
-                [Users::Empty; 3], 
-                [Users::Empty; 3]
+                [Player::UserOne; 3], 
+                [Player::Empty; 3], 
+                [Player::Empty; 3]
             ]
         };
         assert_eq!(is_winning_board(board), true);
@@ -179,9 +191,9 @@ mod win_condition_tests {
     fn diagonal_is_win() {
         let board = Board {
             grid: [
-                [Users::UserOne, Users::Empty, Users::Empty],
-                [Users::Empty, Users::UserOne, Users::Empty],
-                [Users::Empty, Users::Empty, Users::UserOne],                
+                [Player::UserOne, Player::Empty, Player::Empty],
+                [Player::Empty, Player::UserOne, Player::Empty],
+                [Player::Empty, Player::Empty, Player::UserOne],                
             ]
         };
         assert_eq!(is_winning_board(board), true);
@@ -191,9 +203,9 @@ mod win_condition_tests {
     fn complete_column_is_win() {
         let board = Board {
             grid: [
-                [Users::UserOne, Users::Empty, Users::Empty],
-                [Users::UserOne, Users::Empty, Users::Empty],
-                [Users::UserOne, Users::Empty, Users::Empty],
+                [Player::UserOne, Player::Empty, Player::Empty],
+                [Player::UserOne, Player::Empty, Player::Empty],
+                [Player::UserOne, Player::Empty, Player::Empty],
             ]
         };
         assert_eq!(is_winning_board(board), true);
@@ -203,9 +215,9 @@ mod win_condition_tests {
     fn combined_row_is_no_win() {
         let board = Board {
             grid: [
-                [Users::UserOne, Users::UserTwo, Users::UserTwo],
-                [Users::Empty, Users::Empty, Users::Empty],
-                [Users::Empty, Users::Empty, Users::Empty],
+                [Player::UserOne, Player::UserTwo, Player::UserTwo],
+                [Player::Empty, Player::Empty, Player::Empty],
+                [Player::Empty, Player::Empty, Player::Empty],
             ]
         };
         assert_eq!(is_winning_board(board), false);
@@ -215,9 +227,9 @@ mod win_condition_tests {
     fn combined_column_is_no_win() {
         let board = Board {
             grid: [
-                [Users::UserOne, Users::Empty, Users::Empty],
-                [Users::UserTwo, Users::Empty, Users::Empty],
-                [Users::UserOne, Users::Empty, Users::Empty],
+                [Player::UserOne, Player::Empty, Player::Empty],
+                [Player::UserTwo, Player::Empty, Player::Empty],
+                [Player::UserOne, Player::Empty, Player::Empty],
             ]
         };
         assert_eq!(is_winning_board(board), false);
@@ -227,9 +239,9 @@ mod win_condition_tests {
     fn combined_diagonal_is_no_win() {
         let board = Board {
             grid: [
-                [Users::UserOne, Users::Empty, Users::Empty],
-                [Users::Empty, Users::UserTwo, Users::Empty],
-                [Users::Empty, Users::Empty, Users::UserOne],
+                [Player::UserOne, Player::Empty, Player::Empty],
+                [Player::Empty, Player::UserTwo, Player::Empty],
+                [Player::Empty, Player::Empty, Player::UserOne],
             ]
         };
         assert_eq!(is_winning_board(board), false);
