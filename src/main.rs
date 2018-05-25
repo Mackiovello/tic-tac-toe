@@ -1,5 +1,7 @@
 mod user_input;
 
+// TODO: Implement an always-winning bot with https://en.wikipedia.org/wiki/Tic-tac-toe#Strategy
+
 fn main() {
     let mut board = Board::new();
     let mut won: bool = false;
@@ -7,33 +9,22 @@ fn main() {
     let mut current_user = Users::UserOne;
 
     while !won {
+        // TODO: Write out the current player
         let coordinate = user_input::get_coordinate_from_user();
         board = add_value_to_board(board, coordinate, current_user);
 
         current_user = match current_user {
             Users::UserOne => Users::UserTwo,
             Users::UserTwo => Users::UserOne,
-            _ => panic!("That option is optional")
+            _ => panic!("That option is not possible")
         };
 
-        let (game_over, new_board) = is_winning_board_old(board);
+        let game_over = is_winning_board(board);
         won = game_over;
-        board = new_board;
         print_board(board);
     }
-}
 
-// Dummy implementation - should change
-fn is_winning_board_old(board: Board) -> (bool, Board) {
-    let mut values: Vec<Users> = Vec::new();
-
-    for (i, _) in board.grid.iter().enumerate() {
-        for (j, _) in board.grid[i].iter().enumerate() {
-            values.push(board.grid[j][i])
-        }
-    }
-
-    (values.into_iter().filter(|x| *x == Users::UserOne).count() == 3, board)
+    // TODO: Print out the winner
 }
 
 fn is_winning_board(board: Board) -> bool {
@@ -50,6 +41,7 @@ fn is_diagonal_win(board: Board) -> bool {
         left_diagonal.push(grid[x][2-x]);
     }
 
+    // TODO: fix this mess
     let mut user_one_right = right_diagonal.clone().into_iter();
     let mut user_two_right = right_diagonal.clone().into_iter();
     let mut user_one_left = left_diagonal.clone().into_iter();
@@ -93,12 +85,14 @@ fn is_row_win(board: Board) -> bool {
 }
 
 fn add_value_to_board(mut board: Board, coordinate: (usize, usize), coordinate_value: Users) -> Board {
+    // TODO: Check if the coordinate is already taken
     board.grid[coordinate.0][coordinate.1] = coordinate_value;
     board
 }
 
 fn print_board(board: Board) {
 
+    // TODO: Add as a trait to Board
     let mut values: Vec<String> = Vec::new();
 
     for (i, _) in board.grid.iter().enumerate() {
