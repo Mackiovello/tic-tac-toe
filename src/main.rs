@@ -1,6 +1,8 @@
-use std::fmt;
-
 mod user_input;
+mod players;
+
+use std::fmt;
+use players::{Player, player_to_sign};
 
 // TODO: Implement an always-winning bot with https://en.wikipedia.org/wiki/Tic-tac-toe#Strategy
 
@@ -110,7 +112,7 @@ impl fmt::Display for Board {
 
         for (i, _) in self.grid.iter().enumerate() {
             for (j, _) in self.grid[i].iter().enumerate() {
-                values.push(user_to_sign(self.grid[j][i]))
+                values.push(player_to_sign(self.grid[j][i]))
             }
         }
 
@@ -137,14 +139,6 @@ impl fmt::Display for Board {
     }
 }
 
-fn user_to_sign(value: Player) -> String {
-    match value {
-        Player::One => "O",
-        Player::Two => "X",
-        Player::Empty => "-"
-    }.to_string()
-}
-
 #[derive(Debug, Clone, Copy)]
 struct Board {
     grid: [[Player; 3]; 3],
@@ -158,24 +152,7 @@ impl Board {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-enum Player {
-    One,
-    Two,
-    Empty,
-}
 
-impl fmt::Display for Player {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // Customize so only `x` and `y` are denoted.
-        let to_print = match self {
-            &Player::One => "player one",
-            &Player::Two => "player two",
-            &Player::Empty => panic!("Can't print for no player")
-        };
-        write!(f, "{}", to_print)
-    }
-}
 
 #[cfg(test)]
 mod win_condition_tests {
@@ -193,7 +170,7 @@ mod win_condition_tests {
     fn complete_row_is_win() {
         let board = Board {
             grid: [
-                [Player::UserOne; 3], 
+                [Player::One; 3], 
                 [Player::Empty; 3], 
                 [Player::Empty; 3]
             ]
@@ -205,9 +182,9 @@ mod win_condition_tests {
     fn diagonal_is_win() {
         let board = Board {
             grid: [
-                [Player::UserOne, Player::Empty, Player::Empty],
-                [Player::Empty, Player::UserOne, Player::Empty],
-                [Player::Empty, Player::Empty, Player::UserOne],                
+                [Player::One, Player::Empty, Player::Empty],
+                [Player::Empty, Player::One, Player::Empty],
+                [Player::Empty, Player::Empty, Player::One],                
             ]
         };
         assert_eq!(is_winning_board(board), true);
@@ -217,9 +194,9 @@ mod win_condition_tests {
     fn complete_column_is_win() {
         let board = Board {
             grid: [
-                [Player::UserOne, Player::Empty, Player::Empty],
-                [Player::UserOne, Player::Empty, Player::Empty],
-                [Player::UserOne, Player::Empty, Player::Empty],
+                [Player::One, Player::Empty, Player::Empty],
+                [Player::One, Player::Empty, Player::Empty],
+                [Player::One, Player::Empty, Player::Empty],
             ]
         };
         assert_eq!(is_winning_board(board), true);
@@ -229,7 +206,7 @@ mod win_condition_tests {
     fn combined_row_is_no_win() {
         let board = Board {
             grid: [
-                [Player::UserOne, Player::UserTwo, Player::UserTwo],
+                [Player::One, Player::Two, Player::Two],
                 [Player::Empty, Player::Empty, Player::Empty],
                 [Player::Empty, Player::Empty, Player::Empty],
             ]
@@ -241,9 +218,9 @@ mod win_condition_tests {
     fn combined_column_is_no_win() {
         let board = Board {
             grid: [
-                [Player::UserOne, Player::Empty, Player::Empty],
-                [Player::UserTwo, Player::Empty, Player::Empty],
-                [Player::UserOne, Player::Empty, Player::Empty],
+                [Player::One, Player::Empty, Player::Empty],
+                [Player::Two, Player::Empty, Player::Empty],
+                [Player::One, Player::Empty, Player::Empty],
             ]
         };
         assert_eq!(is_winning_board(board), false);
@@ -253,9 +230,9 @@ mod win_condition_tests {
     fn combined_diagonal_is_no_win() {
         let board = Board {
             grid: [
-                [Player::UserOne, Player::Empty, Player::Empty],
-                [Player::Empty, Player::UserTwo, Player::Empty],
-                [Player::Empty, Player::Empty, Player::UserOne],
+                [Player::One, Player::Empty, Player::Empty],
+                [Player::Empty, Player::Two, Player::Empty],
+                [Player::Empty, Player::Empty, Player::One],
             ]
         };
         assert_eq!(is_winning_board(board), false);
