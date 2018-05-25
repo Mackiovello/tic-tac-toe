@@ -1,3 +1,5 @@
+use std::fmt;
+
 mod user_input;
 
 // TODO: Implement an always-winning bot with https://en.wikipedia.org/wiki/Tic-tac-toe#Strategy
@@ -16,7 +18,7 @@ fn main() {
             Ok(b) => board = b,
             Err(e) => {
                 println!("{}", e);
-                print_board(board);
+                println!("{}", board);
                 continue
             }
         }
@@ -29,7 +31,7 @@ fn main() {
 
         let game_over = is_winning_board(board);
         won = game_over;
-        print_board(board);
+        println!("{}", board);
     }
 
     // TODO: Print out the winner
@@ -102,37 +104,37 @@ fn add_value_to_board(mut board: Board, coordinate: (usize, usize), player: Play
     }
 }
 
-fn print_board(board: Board) {
+impl fmt::Display for Board {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut values: Vec<String> = Vec::new();
 
-    // TODO: Add as a trait to Board
-    let mut values: Vec<String> = Vec::new();
-
-    for (i, _) in board.grid.iter().enumerate() {
-        for (j, _) in board.grid[i].iter().enumerate() {
-            values.push(user_to_sign(board.grid[j][i]))
+        for (i, _) in self.grid.iter().enumerate() {
+            for (j, _) in self.grid[i].iter().enumerate() {
+                values.push(user_to_sign(self.grid[j][i]))
+            }
         }
-    }
 
-    println!(
-"      0     1     2
-         |     |
-  0  {}   |  {}  |  {}
-    _____|_____|_____
-         |     |
-  1  {}   |  {}  |  {}
-    _____|_____|_____
-         |     |
-  2  {}   |  {}  |  {}
-         |     |     ",  
-    values[0], 
-    values[1], 
-    values[2], 
-    values[3], 
-    values[4], 
-    values[5], 
-    values[6],
-    values[7], 
-    values[8]);
+        write!(f,
+"          0     1     2
+             |     |
+    0     {}  |  {}  |  {}
+        _____|_____|_____
+             |     |
+    1     {}  |  {}  |  {}
+        _____|_____|_____
+             |     |
+    2     {}  |  {}  |  {}
+             |     |     ",  
+        values[0], 
+        values[1], 
+        values[2], 
+        values[3], 
+        values[4], 
+        values[5], 
+        values[6],
+        values[7], 
+        values[8])
+    }
 }
 
 fn user_to_sign(value: Player) -> String {
