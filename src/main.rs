@@ -7,59 +7,56 @@ use players::{Player};
 // TODO: Implement an always-winning bot with https://en.wikipedia.org/wiki/Tic-tac-toe#Strategy
 
 fn main() {
-    let mut game = Game::new();
+    let game = Game::new();
 
-    while game.state == GameState::InProgress || game.state == GameState::NotStarted {
-        println!("The current player is {}", game.current_player);
-        let coordinate = user_input::get_coordinate_from_user();
+    play_game(game);
+}
 
+fn play_game(game: Game) {
+    if game.is_over {
+        println!("Game over");
+    }
+    else {
+        let coordinate = user_input::get_coordinate_from_user(); 
         match add_value_to_board(game.board, coordinate, game.current_player) {
-            Ok(b) => game.board = b,
+            Ok(b) => {
+                let new_game = Game {
+                    board: b,
+                    is_over: game.is_over,
+                    current_player: game.current_player
+                }.next_turn();
+                println!("{}", new_game.board);
+                play_game(new_game);
+            },
             Err(e) => {
                 println!("{}", e);
                 println!("{}", game.board);
-                continue
             }
         }
-
-        game.next_turn();
-        println!("{}", game.board);
     }
-
-    println!("{} won!", game.current_player);
 }
 
 struct Game {
     board: Board,
     current_player: Player,
-    state: GameState 
+    is_over: bool 
 }
 
 impl Game {
     fn new() -> Game {
         let board = Board::new();
         let current_player = Player::One;
-        let state = GameState::NotStarted;
-        Game { board, current_player, state }
+        let is_over = false;
+        Game { board, current_player, is_over }
     }
 
-    fn next_turn(&mut self) {
-        self.current_player = players::switch_player(self.current_player);
-
-        if is_winning_board(self.board) {
-            self.state = GameState::Won
-        } else {
-            self.state = GameState::InProgress
+    fn next_turn(&self) -> Game {
+        Game {
+            board: self.board,
+            is_over: is_winning_board(self.board),
+            current_player: players::switch_player(self.current_player)
         }
     }
-}
-
-#[derive(PartialEq)]
-enum GameState {
-    NotStarted,
-    InProgress,
-    Won,
-    Equal,
 }
 
 fn is_winning_board(board: Board) -> bool {
