@@ -8,6 +8,14 @@ pub fn player_to_sign(player: Player) -> String {
     }.to_string()
 }
 
+pub fn switch_player(current_player: Player) -> Player {
+    match current_player {
+        Player::One => Player::Two,
+        Player::Two => Player::One,
+        _ => panic!("That option is not possible")
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Player {
     One,

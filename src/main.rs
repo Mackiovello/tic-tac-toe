@@ -2,41 +2,64 @@ mod user_input;
 mod players;
 
 use std::fmt;
-use players::{Player, player_to_sign};
+use players::{Player};
 
 // TODO: Implement an always-winning bot with https://en.wikipedia.org/wiki/Tic-tac-toe#Strategy
 
 fn main() {
-    let mut board = Board::new();
-    let mut won: bool = false;
+    let mut game = Game::new();
 
-    let mut current_user = Player::One;
-
-    while !won {
-        println!("The current player is {}", current_user);
+    while game.state == GameState::InProgress || game.state == GameState::NotStarted {
+        println!("The current player is {}", game.current_player);
         let coordinate = user_input::get_coordinate_from_user();
 
-        match add_value_to_board(board, coordinate, current_user) {
-            Ok(b) => board = b,
+        match add_value_to_board(game.board, coordinate, game.current_player) {
+            Ok(b) => game.board = b,
             Err(e) => {
                 println!("{}", e);
-                println!("{}", board);
+                println!("{}", game.board);
                 continue
             }
         }
 
-        current_user = match current_user {
-            Player::One => Player::Two,
-            Player::Two => Player::One,
-            _ => panic!("That option is not possible")
-        };
-
-        let game_over = is_winning_board(board);
-        won = game_over;
-        println!("{}", board);
+        game.next_turn();
+        println!("{}", game.board);
     }
 
-    println!("{} won!", current_user);
+    println!("{} won!", game.current_player);
+}
+
+struct Game {
+    board: Board,
+    current_player: Player,
+    state: GameState 
+}
+
+impl Game {
+    fn new() -> Game {
+        let board = Board::new();
+        let current_player = Player::One;
+        let state = GameState::NotStarted;
+        Game { board, current_player, state }
+    }
+
+    fn next_turn(&mut self) {
+        self.current_player = players::switch_player(self.current_player);
+
+        if is_winning_board(self.board) {
+            self.state = GameState::Won
+        } else {
+            self.state = GameState::InProgress
+        }
+    }
+}
+
+#[derive(PartialEq)]
+enum GameState {
+    NotStarted,
+    InProgress,
+    Won,
+    Equal,
 }
 
 fn is_winning_board(board: Board) -> bool {
@@ -112,7 +135,7 @@ impl fmt::Display for Board {
 
         for (i, _) in self.grid.iter().enumerate() {
             for (j, _) in self.grid[i].iter().enumerate() {
-                values.push(player_to_sign(self.grid[j][i]))
+                values.push(players::player_to_sign(self.grid[j][i]))
             }
         }
 
@@ -152,7 +175,20 @@ impl Board {
     }
 }
 
+#[cfg(test)]
+mod game_flow_tests {
+    use super::*;
 
+    #[test]
+    fn next_turn_switches_current_player() {
+        let mut game = Game::new();
+        let initial_player = game.current_player;
+
+        game.next_turn();
+        let players_are_same = initial_player == game.current_player;
+        assert_eq!(players_are_same, false)
+    }
+}
 
 #[cfg(test)]
 mod win_condition_tests {
