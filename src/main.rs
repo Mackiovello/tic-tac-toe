@@ -1,15 +1,47 @@
 mod user_input;
 mod players;
+mod players2;
 
 use std::fmt;
 use players::{Player};
+use players2::{HumanPlayer, Player2};
 
 // TODO: Implement an always-winning bot with https://en.wikipedia.org/wiki/Tic-tac-toe#Strategy
 
 fn main() {
-    let game = Game::new();
+    let player_one = HumanPlayer { sign: 'O' };
+    let player_two = HumanPlayer { sign: 'X' };    
+    
+    let game = new_game2((player_one, player_two));
+    
+        play_game2(game);
+    // play_game(game, &user_input::get_coordinate_from_user);
+}
 
-    play_game(game, &user_input::get_coordinate_from_user);
+fn play_game2<T: Player2>(game: Game2<T>) {
+    if game.is_over {
+        println!("Game over");
+    }
+    else {
+        let coordinate = game.current_player.get_coordinate(); 
+        match add_value_to_board2(game.board, coordinate, game.current_player) {
+            Ok(b) => {
+                let new_game = Game2 {
+                    board: b,
+                    players: game.players,
+                    is_over: game.is_over,
+                    current_player: game.current_player
+                };
+                let new_game2 = next_turn(new_game);
+                println!("{:?}", new_game2.board);
+                play_game2(new_game2);
+            },
+            Err(e) => {
+                println!("{}", e);
+                println!("{:?}", game.board);
+            }
+        }
+    }    
 }
 
 fn play_game(game: Game, get_user_input: &Fn() -> ((usize, usize))) {
@@ -32,6 +64,34 @@ fn play_game(game: Game, get_user_input: &Fn() -> ((usize, usize))) {
                 println!("{}", e);
                 println!("{}", game.board);
             }
+        }
+    }
+}
+
+struct Game2<T: Player2> {
+    board: Board2,
+    players: (T, T),
+    current_player: T,
+    is_over: bool
+}
+
+fn new_game2<T: Player2>(players: (T, T)) -> Game2<T> {
+    let board = Board2::new();
+    let current_player = players.0;
+    let players = players;
+    let is_over = false;
+    Game2 { board, current_player, players, is_over }
+}
+
+fn next_turn<T: Player2>(game: Game2<T>) -> Game2<T> {
+    Game2 {
+        board: game.board,
+        is_over: true,
+        players: game.players,
+        current_player: if game.current_player == game.players.0 {
+            game.players.1
+        } else {
+            game.players.0
         }
     }
 }
@@ -127,6 +187,16 @@ fn add_value_to_board(board: Board, coordinate: (usize, usize), player: Player) 
     }
 }
 
+fn add_value_to_board2<T: Player2>(board: Board2, coordinate: (usize, usize), player: T) -> Result<Board2, String> {
+    if board.grid[coordinate.0][coordinate.1] != '-' {
+        return Err("The field is already taken".to_string());
+    }
+
+    let mut new_board = board.clone();
+    new_board.grid[coordinate.0][coordinate.1] = player.get_sign();
+    Ok(new_board)
+}
+
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut values: Vec<String> = Vec::new();
@@ -157,6 +227,19 @@ impl fmt::Display for Board {
         values[6],
         values[7], 
         values[8])
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct Board2 {
+    grid: [[char; 3]; 3]
+}
+
+impl Board2 {
+    fn new() -> Board2 {
+        Board2 {
+            grid: [['-'; 3]; 3],
+        }
     }
 }
 
