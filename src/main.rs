@@ -9,15 +9,15 @@ use players::{Player};
 fn main() {
     let game = Game::new();
 
-    play_game(game);
+    play_game(game, &user_input::get_coordinate_from_user);
 }
 
-fn play_game(game: Game) {
+fn play_game(game: Game, get_user_input: &Fn() -> ((usize, usize))) {
     if game.is_over {
         println!("Game over");
     }
     else {
-        let coordinate = user_input::get_coordinate_from_user(); 
+        let coordinate = get_user_input(); 
         match add_value_to_board(game.board, coordinate, game.current_player) {
             Ok(b) => {
                 let new_game = Game {
@@ -26,7 +26,7 @@ fn play_game(game: Game) {
                     current_player: game.current_player
                 }.next_turn();
                 println!("{}", new_game.board);
-                play_game(new_game);
+                play_game(new_game, get_user_input);
             },
             Err(e) => {
                 println!("{}", e);
@@ -116,12 +116,13 @@ fn is_row_win(board: Board) -> bool {
     false
 }
 
-fn add_value_to_board(mut board: Board, coordinate: (usize, usize), player: Player) -> Result<Board, String> {
+fn add_value_to_board(board: Board, coordinate: (usize, usize), player: Player) -> Result<Board, String> {
     match board.grid[coordinate.0][coordinate.1] {
         Player::One | Player::Two => Err("The field is already taken".to_string()),
         Player::Empty => {
-            board.grid[coordinate.0][coordinate.1] = player;
-            Ok(board)
+            let mut new_board = board.clone();
+            new_board.grid[coordinate.0][coordinate.1] = player;
+            Ok(new_board)
         }
     }
 }
@@ -177,12 +178,20 @@ mod game_flow_tests {
     use super::*;
 
     #[test]
-    fn next_turn_switches_current_player() {
+    fn play_game_with_game_over_does_not_panic() {
         let mut game = Game::new();
+        game.is_over = true;
+
+        play_game(game, &|| (0, 0))
+    }
+
+    #[test]
+    fn next_turn_switches_current_player() {
+        let game = Game::new();
         let initial_player = game.current_player;
 
-        game.next_turn();
-        let players_are_same = initial_player == game.current_player;
+        let game_after_turn = game.next_turn();
+        let players_are_same = initial_player == game_after_turn.current_player;
         assert_eq!(players_are_same, false)
     }
 }
