@@ -19,24 +19,32 @@ fn play_game<T: Player>(game: Game<T>) {
         println!("Game over");
     }
     else {
-        let coordinate = game.current_player.get_coordinate(); 
-        match game.board.add_value(coordinate, game.current_player) {
-            Ok(b) => {
-                let new_game = Game {
-                    board: b,
-                    players: game.players,
-                    is_over: game.is_over,
-                    current_player: game.current_player
-                };
-                let new_game = next_turn(new_game);
-                println!("{}", new_game.board);
-                play_game(new_game);
-            },
+        match game.current_player.get_coordinate() {
+            Ok(coordinate) => {
+                match game.board.add_value(coordinate, game.current_player) {
+                    Ok(b) => {
+                        let new_game = Game {
+                            board: b,
+                            players: game.players,
+                            is_over: game.is_over,
+                            current_player: game.current_player
+                        };
+                        let new_game = next_turn(new_game);
+                        println!("{}", new_game.board);
+                        play_game(new_game);
+                    },
+                    Err(e) => {
+                        println!("{}", e);
+                        println!("{}", game.board);
+                    }
+                }
+            }
             Err(e) => {
                 println!("{}", e);
                 println!("{}", game.board);
             }
         }
+
     }    
 }
 
