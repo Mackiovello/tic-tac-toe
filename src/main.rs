@@ -1,10 +1,7 @@
-mod user_input;
 mod players;
-mod players2;
 
 use std::fmt;
-use players::{Player};
-use players2::{HumanPlayer, Player2};
+use players::{HumanPlayer, Player};
 
 // TODO: Implement an always-winning bot with https://en.wikipedia.org/wiki/Tic-tac-toe#Strategy
 
@@ -12,81 +9,56 @@ fn main() {
     let player_one = HumanPlayer { sign: 'O' };
     let player_two = HumanPlayer { sign: 'X' };    
     
-    let game = new_game2((player_one, player_two));
+    let game = new_game((player_one, player_two));
     
-        play_game2(game);
-    // play_game(game, &user_input::get_coordinate_from_user);
+    play_game(game);
 }
 
-fn play_game2<T: Player2>(game: Game2<T>) {
+fn play_game<T: Player>(game: Game<T>) {
     if game.is_over {
         println!("Game over");
     }
     else {
         let coordinate = game.current_player.get_coordinate(); 
-        match add_value_to_board2(game.board, coordinate, game.current_player) {
+        match add_value_to_board(game.board, coordinate, game.current_player) {
             Ok(b) => {
-                let new_game = Game2 {
+                let new_game = Game {
                     board: b,
                     players: game.players,
                     is_over: game.is_over,
                     current_player: game.current_player
                 };
-                let new_game2 = next_turn(new_game);
-                println!("{:?}", new_game2.board);
-                play_game2(new_game2);
-            },
-            Err(e) => {
-                println!("{}", e);
-                println!("{:?}", game.board);
-            }
-        }
-    }    
-}
-
-fn play_game(game: Game, get_user_input: &Fn() -> ((usize, usize))) {
-    if game.is_over {
-        println!("Game over");
-    }
-    else {
-        let coordinate = get_user_input(); 
-        match add_value_to_board(game.board, coordinate, game.current_player) {
-            Ok(b) => {
-                let new_game = Game {
-                    board: b,
-                    is_over: game.is_over,
-                    current_player: game.current_player
-                }.next_turn();
+                let new_game = next_turn(new_game);
                 println!("{}", new_game.board);
-                play_game(new_game, get_user_input);
+                play_game(new_game);
             },
             Err(e) => {
                 println!("{}", e);
                 println!("{}", game.board);
             }
         }
-    }
+    }    
 }
 
-struct Game2<T: Player2> {
-    board: Board2,
+struct Game<T: Player> {
+    board: Board,
     players: (T, T),
     current_player: T,
     is_over: bool
 }
 
-fn new_game2<T: Player2>(players: (T, T)) -> Game2<T> {
-    let board = Board2::new();
+fn new_game<T: Player>(players: (T, T)) -> Game<T> {
+    let board = Board::new();
     let current_player = players.0;
     let players = players;
     let is_over = false;
-    Game2 { board, current_player, players, is_over }
+    Game { board, current_player, players, is_over }
 }
 
-fn next_turn<T: Player2>(game: Game2<T>) -> Game2<T> {
-    Game2 {
+fn next_turn<T: Player>(game: Game<T>) -> Game<T> {
+    Game {
         board: game.board,
-        is_over: true,
+        is_over: is_winning_board(game.board, game.players),
         players: game.players,
         current_player: if game.current_player == game.players.0 {
             game.players.1
@@ -96,38 +68,15 @@ fn next_turn<T: Player2>(game: Game2<T>) -> Game2<T> {
     }
 }
 
-struct Game {
-    board: Board,
-    current_player: Player,
-    is_over: bool 
+fn is_winning_board<T: Player>(board: Board, players: (T, T)) -> bool {
+    is_column_win(board, players) || is_row_win(board, players) || is_diagonal_win(board, players)    
 }
 
-impl Game {
-    fn new() -> Game {
-        let board = Board::new();
-        let current_player = Player::One;
-        let is_over = false;
-        Game { board, current_player, is_over }
-    }
-
-    fn next_turn(&self) -> Game {
-        Game {
-            board: self.board,
-            is_over: is_winning_board(self.board),
-            current_player: players::switch_player(self.current_player)
-        }
-    }
-}
-
-fn is_winning_board(board: Board) -> bool {
-    is_column_win(board) || is_row_win(board) || is_diagonal_win(board)
-}
-
-fn is_diagonal_win(board: Board) -> bool {
+fn is_diagonal_win<T: Player>(board: Board, players: (T, T)) -> bool {
     let grid = board.grid;
 
-    let mut right_diagonal: Vec<Player> = Vec::new();
-    let mut left_diagonal: Vec<Player> = Vec::new();
+    let mut right_diagonal: Vec<char> = Vec::new();
+    let mut left_diagonal: Vec<char> = Vec::new();
     for x in 0..3 {
         right_diagonal.push(grid[x][x]);
         left_diagonal.push(grid[x][2-x]);
@@ -139,15 +88,15 @@ fn is_diagonal_win(board: Board) -> bool {
     let mut user_one_left = left_diagonal.clone().into_iter();
     let mut user_two_left = left_diagonal.clone().into_iter();    
 
-    user_one_right.all(|x| x == Player::One) || 
-    user_two_right.all(|x| x == Player::Two) ||
-    user_one_left.all(|x| x == Player::One) ||
-    user_two_left.all(|x| x == Player::Two)
+    user_one_right.all(|x| x == players.0.get_sign()) || 
+    user_two_right.all(|x| x == players.1.get_sign()) ||
+    user_one_left.all(|x| x == players.0.get_sign()) ||
+    user_two_left.all(|x| x == players.1.get_sign())
 }
 
-fn is_column_win(board: Board) -> bool {
+fn is_column_win<T: Player>(board: Board, players: (T, T)) -> bool {
     let transposed = transpose_board(board);
-    is_row_win(transposed)
+    is_row_win(transposed, players)
 }
 
 fn transpose_board(board: Board) -> Board {
@@ -162,13 +111,13 @@ fn transpose_board(board: Board) -> Board {
     transposed
 }
 
-fn is_row_win(board: Board) -> bool {
+fn is_row_win<T: Player>(board: Board, players: (T, T)) -> bool {
     for row in board.grid.iter() {
         let mut iter_row_one = row.into_iter();
         let mut iter_row_two = row.into_iter();
 
-        let win = iter_row_one.all(|x| *x == Player::One) ||
-                  iter_row_two.all(|x| *x == Player::Two);
+        let win = iter_row_one.all(|x| *x == players.0.get_sign()) ||
+                  iter_row_two.all(|x| *x == players.1.get_sign());
         if win {
             return true;      
         } 
@@ -176,18 +125,7 @@ fn is_row_win(board: Board) -> bool {
     false
 }
 
-fn add_value_to_board(board: Board, coordinate: (usize, usize), player: Player) -> Result<Board, String> {
-    match board.grid[coordinate.0][coordinate.1] {
-        Player::One | Player::Two => Err("The field is already taken".to_string()),
-        Player::Empty => {
-            let mut new_board = board.clone();
-            new_board.grid[coordinate.0][coordinate.1] = player;
-            Ok(new_board)
-        }
-    }
-}
-
-fn add_value_to_board2<T: Player2>(board: Board2, coordinate: (usize, usize), player: T) -> Result<Board2, String> {
+fn add_value_to_board<T: Player>(board: Board, coordinate: (usize, usize), player: T) -> Result<Board, String> {
     if board.grid[coordinate.0][coordinate.1] != '-' {
         return Err("The field is already taken".to_string());
     }
@@ -199,13 +137,11 @@ fn add_value_to_board2<T: Player2>(board: Board2, coordinate: (usize, usize), pl
 
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut values: Vec<String> = Vec::new();
-
-        for (i, _) in self.grid.iter().enumerate() {
-            for (j, _) in self.grid[i].iter().enumerate() {
-                values.push(players::player_to_sign(self.grid[j][i]))
-            }
-        }
+        let values = self.grid
+                        .iter()
+                        .flat_map(|a| a.iter())
+                        .cloned()
+                        .collect::<Vec<char>>();
 
         write!(f,
 "          0     1     2
@@ -231,27 +167,14 @@ impl fmt::Display for Board {
 }
 
 #[derive(Debug, Clone, Copy)]
-struct Board2 {
-    grid: [[char; 3]; 3]
-}
-
-impl Board2 {
-    fn new() -> Board2 {
-        Board2 {
-            grid: [['-'; 3]; 3],
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
 struct Board {
-    grid: [[Player; 3]; 3],
+    grid: [[char; 3]; 3]
 }
 
 impl Board {
     fn new() -> Board {
         Board {
-            grid: [[Player::Empty; 3]; 3],
+            grid: [['-'; 3]; 3],
         }
     }
 }
@@ -262,18 +185,20 @@ mod game_flow_tests {
 
     #[test]
     fn play_game_with_game_over_does_not_panic() {
-        let mut game = Game::new();
+        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });
+        let mut game = new_game(players);
         game.is_over = true;
 
-        play_game(game, &|| (0, 0))
+        play_game(game)
     }
 
     #[test]
     fn next_turn_switches_current_player() {
-        let game = Game::new();
+        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });        
+        let game = new_game(players);
         let initial_player = game.current_player;
 
-        let game_after_turn = game.next_turn();
+        let game_after_turn = next_turn(game);
         let players_are_same = initial_player == game_after_turn.current_player;
         assert_eq!(players_are_same, false)
     }
@@ -285,81 +210,88 @@ mod win_condition_tests {
 
     #[test]
     fn empty_board_is_no_win() {
+        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });                
         let board = Board {
-            grid: [[Player::Empty; 3]; 3]
+            grid: [['-'; 3]; 3]
         };
-        assert_eq!(is_winning_board(board), false);
+        assert_eq!(is_winning_board(board, players), false);
     }
 
     #[test]
     fn complete_row_is_win() {
+        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });                                        
         let board = Board {
             grid: [
-                [Player::One; 3], 
-                [Player::Empty; 3], 
-                [Player::Empty; 3]
+                ['O'; 3], 
+                ['-'; 3], 
+                ['-'; 3]
             ]
         };
-        assert_eq!(is_winning_board(board), true);
+        assert_eq!(is_winning_board(board, players), true);
     }
 
     #[test]
     fn diagonal_is_win() {
+        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });                                                
         let board = Board {
             grid: [
-                [Player::One, Player::Empty, Player::Empty],
-                [Player::Empty, Player::One, Player::Empty],
-                [Player::Empty, Player::Empty, Player::One],                
+                ['O', '-', '-'],
+                ['-', 'O', '-'],
+                ['-', '-', 'O'],                
             ]
         };
-        assert_eq!(is_winning_board(board), true);
+        assert_eq!(is_winning_board(board, players), true);
     }
 
     #[test]
     fn complete_column_is_win() {
+        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });                                                        
         let board = Board {
             grid: [
-                [Player::One, Player::Empty, Player::Empty],
-                [Player::One, Player::Empty, Player::Empty],
-                [Player::One, Player::Empty, Player::Empty],
+                ['O', '-', '-'],
+                ['O', '-', '-'],
+                ['O', '-', '-'],
             ]
         };
-        assert_eq!(is_winning_board(board), true);
+        assert_eq!(is_winning_board(board, players), true);
     }
 
     #[test]
     fn combined_row_is_no_win() {
+        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });                                                                
         let board = Board {
             grid: [
-                [Player::One, Player::Two, Player::Two],
-                [Player::Empty, Player::Empty, Player::Empty],
-                [Player::Empty, Player::Empty, Player::Empty],
+                ['O', 'X', 'X'],
+                ['-', '-', '-'],
+                ['-', '-', '-'],
             ]
         };
-        assert_eq!(is_winning_board(board), false);
+        assert_eq!(is_winning_board(board, players), false);
     }
 
     #[test]
     fn combined_column_is_no_win() {
+        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });                                                                        
         let board = Board {
             grid: [
-                [Player::One, Player::Empty, Player::Empty],
-                [Player::Two, Player::Empty, Player::Empty],
-                [Player::One, Player::Empty, Player::Empty],
+                ['O', '-', '-'],
+                ['X', '-', '-'],
+                ['O', '-', '-'],
             ]
         };
-        assert_eq!(is_winning_board(board), false);
+        assert_eq!(is_winning_board(board, players), false);
     }
 
     #[test]
     fn combined_diagonal_is_no_win() {
+        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });                                                                        
         let board = Board {
             grid: [
-                [Player::One, Player::Empty, Player::Empty],
-                [Player::Empty, Player::Two, Player::Empty],
-                [Player::Empty, Player::Empty, Player::One],
+                ['O', '-', '-'],
+                ['-', 'X', '-'],
+                ['-', '-', 'O'],
             ]
         };
-        assert_eq!(is_winning_board(board), false);
+        assert_eq!(is_winning_board(board, players), false);
     }
 }
