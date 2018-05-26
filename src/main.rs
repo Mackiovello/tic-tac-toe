@@ -1,6 +1,9 @@
 mod players;
 
+extern crate itertools;
+
 use std::fmt;
+use itertools::Itertools;
 use players::{HumanPlayer, Player};
 
 // TODO: Implement an always-winning bot with https://en.wikipedia.org/wiki/Tic-tac-toe#Strategy
@@ -68,7 +71,7 @@ impl <T> Game<T> where T: Player {
 fn next_turn<T: Player>(game: Game<T>) -> Game<T> {
     Game {
         board: game.board,
-        is_over: is_winning_board(game.board, game.players),
+        is_over: is_winning_board(game.board),
         players: game.players,
         current_player: if game.current_player == game.players.0 {
             game.players.1
@@ -78,11 +81,11 @@ fn next_turn<T: Player>(game: Game<T>) -> Game<T> {
     }
 }
 
-fn is_winning_board<T: Player>(board: Board, players: (T, T)) -> bool {
-    is_column_win(board, players) || is_row_win(board, players) || is_diagonal_win(board, players)    
+fn is_winning_board(board: Board) -> bool {
+    is_column_win(board) || is_row_win(board) || is_diagonal_win(board)    
 }
 
-fn is_diagonal_win<T: Player>(board: Board, players: (T, T)) -> bool {
+fn is_diagonal_win(board: Board) -> bool {
     let grid = board.grid;
 
     let mut right_diagonal: Vec<char> = Vec::new();
@@ -92,21 +95,20 @@ fn is_diagonal_win<T: Player>(board: Board, players: (T, T)) -> bool {
         left_diagonal.push(grid[x][2-x]);
     }
 
-    // TODO: fix this mess
-    let mut user_one_right = right_diagonal.clone().into_iter();
-    let mut user_two_right = right_diagonal.clone().into_iter();
-    let mut user_one_left = left_diagonal.clone().into_iter();
-    let mut user_two_left = left_diagonal.clone().into_iter();    
-
-    user_one_right.all(|x| x == players.0.get_sign()) || 
-    user_two_right.all(|x| x == players.1.get_sign()) ||
-    user_one_left.all(|x| x == players.0.get_sign()) ||
-    user_two_left.all(|x| x == players.1.get_sign())
+    unique_non_empty_row(right_diagonal) || unique_non_empty_row(left_diagonal)
 }
 
-fn is_column_win<T: Player>(board: Board, players: (T, T)) -> bool {
+fn unique_non_empty_row(row: Vec<char>) -> bool {
+    row.clone()
+        .into_iter()
+        .unique()
+        .count() == 1 && 
+        row[0] != '-'
+}
+
+fn is_column_win(board: Board) -> bool {
     let transposed = transpose_board(board);
-    is_row_win(transposed, players)
+    is_row_win(transposed)
 }
 
 fn transpose_board(board: Board) -> Board {
@@ -121,18 +123,11 @@ fn transpose_board(board: Board) -> Board {
     transposed
 }
 
-fn is_row_win<T: Player>(board: Board, players: (T, T)) -> bool {
-    for row in board.grid.iter() {
-        let mut iter_row_one = row.into_iter();
-        let mut iter_row_two = row.into_iter();
-
-        let win = iter_row_one.all(|x| *x == players.0.get_sign()) ||
-                  iter_row_two.all(|x| *x == players.1.get_sign());
-        if win {
-            return true;      
-        } 
-    }
-    false
+fn is_row_win(board: Board) -> bool {
+    board.grid
+        .iter()
+        .filter(|x| unique_non_empty_row(x.to_vec()))
+        .count() > 0
 }
 
 impl fmt::Display for Board {
@@ -220,16 +215,14 @@ mod win_condition_tests {
 
     #[test]
     fn empty_board_is_no_win() {
-        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });                
         let board = Board {
             grid: [['-'; 3]; 3]
         };
-        assert_eq!(is_winning_board(board, players), false);
+        assert_eq!(is_winning_board(board), false);
     }
 
     #[test]
     fn complete_row_is_win() {
-        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });                                        
         let board = Board {
             grid: [
                 ['O'; 3], 
@@ -237,12 +230,11 @@ mod win_condition_tests {
                 ['-'; 3]
             ]
         };
-        assert_eq!(is_winning_board(board, players), true);
+        assert_eq!(is_winning_board(board), true);
     }
 
     #[test]
     fn diagonal_is_win() {
-        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });                                                
         let board = Board {
             grid: [
                 ['O', '-', '-'],
@@ -250,12 +242,11 @@ mod win_condition_tests {
                 ['-', '-', 'O'],                
             ]
         };
-        assert_eq!(is_winning_board(board, players), true);
+        assert_eq!(is_winning_board(board), true);
     }
 
     #[test]
     fn complete_column_is_win() {
-        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });                                                        
         let board = Board {
             grid: [
                 ['O', '-', '-'],
@@ -263,12 +254,11 @@ mod win_condition_tests {
                 ['O', '-', '-'],
             ]
         };
-        assert_eq!(is_winning_board(board, players), true);
+        assert_eq!(is_winning_board(board), true);
     }
 
     #[test]
     fn combined_row_is_no_win() {
-        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });                                                                
         let board = Board {
             grid: [
                 ['O', 'X', 'X'],
@@ -276,12 +266,11 @@ mod win_condition_tests {
                 ['-', '-', '-'],
             ]
         };
-        assert_eq!(is_winning_board(board, players), false);
+        assert_eq!(is_winning_board(board), false);
     }
 
     #[test]
     fn combined_column_is_no_win() {
-        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });                                                                        
         let board = Board {
             grid: [
                 ['O', '-', '-'],
@@ -289,12 +278,11 @@ mod win_condition_tests {
                 ['O', '-', '-'],
             ]
         };
-        assert_eq!(is_winning_board(board, players), false);
+        assert_eq!(is_winning_board(board), false);
     }
 
     #[test]
     fn combined_diagonal_is_no_win() {
-        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });                                                                        
         let board = Board {
             grid: [
                 ['O', '-', '-'],
@@ -302,6 +290,6 @@ mod win_condition_tests {
                 ['-', '-', 'O'],
             ]
         };
-        assert_eq!(is_winning_board(board, players), false);
+        assert_eq!(is_winning_board(board), false);
     }
 }
