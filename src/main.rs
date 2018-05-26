@@ -9,7 +9,7 @@ fn main() {
     let player_one = HumanPlayer { sign: 'O' };
     let player_two = HumanPlayer { sign: 'X' };    
     
-    let game = new_game((player_one, player_two));
+    let game = Game::new((player_one, player_two));
     
     play_game(game);
 }
@@ -48,19 +48,21 @@ fn play_game<T: Player>(game: Game<T>) {
     }    
 }
 
-struct Game<T: Player> {
+struct Game<T> where T: Player {
     board: Board,
     players: (T, T),
     current_player: T,
     is_over: bool
 }
 
-fn new_game<T: Player>(players: (T, T)) -> Game<T> {
-    let board = Board::new();
-    let current_player = players.0;
-    let players = players;
-    let is_over = false;
-    Game { board, current_player, players, is_over }
+impl <T> Game<T> where T: Player {
+    fn new(players: (T, T)) -> Game<T> {
+        let board = Board::new();
+        let current_player = players.0;
+        let players = players;
+        let is_over = false;
+        Game { board, current_player, players, is_over }
+    }
 }
 
 fn next_turn<T: Player>(game: Game<T>) -> Game<T> {
@@ -194,7 +196,7 @@ mod game_flow_tests {
     #[test]
     fn play_game_with_game_over_does_not_panic() {
         let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });
-        let mut game = new_game(players);
+        let mut game = Game::new(players);
         game.is_over = true;
 
         play_game(game)
@@ -203,7 +205,7 @@ mod game_flow_tests {
     #[test]
     fn next_turn_switches_current_player() {
         let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });        
-        let game = new_game(players);
+        let game = Game::new(players);
         let initial_player = game.current_player;
 
         let game_after_turn = next_turn(game);
