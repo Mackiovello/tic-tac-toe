@@ -20,7 +20,7 @@ fn play_game<T: Player>(game: Game<T>) {
     }
     else {
         let coordinate = game.current_player.get_coordinate(); 
-        match add_value_to_board(game.board, coordinate, game.current_player) {
+        match game.board.add_value(coordinate, game.current_player) {
             Ok(b) => {
                 let new_game = Game {
                     board: b,
@@ -125,16 +125,6 @@ fn is_row_win<T: Player>(board: Board, players: (T, T)) -> bool {
     false
 }
 
-fn add_value_to_board<T: Player>(board: Board, coordinate: (usize, usize), player: T) -> Result<Board, String> {
-    if board.grid[coordinate.0][coordinate.1] != '-' {
-        return Err("The field is already taken".to_string());
-    }
-
-    let mut new_board = board.clone();
-    new_board.grid[coordinate.0][coordinate.1] = player.get_sign();
-    Ok(new_board)
-}
-
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let values = self.grid
@@ -176,6 +166,16 @@ impl Board {
         Board {
             grid: [['-'; 3]; 3],
         }
+    }
+
+    fn add_value<T: Player>(&self, coordinate: (usize, usize), player: T) -> Result<Board, String> {
+        if self.grid[coordinate.0][coordinate.1] != '-' {
+            return Err("The field is already taken".to_string());
+        }
+
+        let mut new_board = self.clone();
+        new_board.grid[coordinate.0][coordinate.1] = player.get_sign();
+        Ok(new_board)
     }
 }
 
