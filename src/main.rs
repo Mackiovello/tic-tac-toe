@@ -31,7 +31,7 @@ fn play_game<T: Player>(game: Game<T>) {
                             is_over: game.is_over,
                             current_player: game.current_player
                         };
-                        let new_game = next_turn(new_game);
+                        let new_game = new_game.next_turn();
                         println!("{}", new_game.board);
                         play_game(new_game);
                     },
@@ -65,17 +65,17 @@ impl <T> Game<T> where T: Player {
         let is_over = false;
         Game { board, current_player, players, is_over }
     }
-}
 
-fn next_turn<T: Player>(game: Game<T>) -> Game<T> {
-    Game {
-        board: game.board,
-        is_over: is_winning_grid(game.board.grid),
-        players: game.players,
-        current_player: if game.current_player == game.players.0 {
-            game.players.1
-        } else {
-            game.players.0
+    fn next_turn(&self) -> Self {
+        Game {
+            board: self.board,
+            is_over: is_winning_grid(self.board.grid),
+            players: self.players,
+            current_player: if self.current_player == self.players.0 {
+                self.players.1
+            } else {
+                self.players.0
+            }
         }
     }
 }
@@ -185,7 +185,7 @@ mod game_tests {
 
     #[test]
     fn play_game_with_game_over_does_not_panic() {
-        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });
+        let players = (TestPlayer { sign: 'O' }, TestPlayer { sign: 'X' });
         let mut game = Game::new(players);
         game.is_over = true;
 
@@ -194,11 +194,11 @@ mod game_tests {
 
     #[test]
     fn next_turn_switches_current_player() {
-        let players = (HumanPlayer { sign: 'O' }, HumanPlayer { sign: 'X' });        
+        let players = (TestPlayer { sign: 'O' }, TestPlayer { sign: 'X' });        
         let game = Game::new(players);
         let initial_player = game.current_player;
 
-        let game_after_turn = next_turn(game);
+        let game_after_turn = game.next_turn();
         let players_are_same = initial_player == game_after_turn.current_player;
         assert_eq!(players_are_same, false)
     }
