@@ -11,7 +11,7 @@ pub struct HumanPlayer {
     pub sign: char,
 }
 
-impl Player for HumanPlayer where  {
+impl Player for HumanPlayer {
     fn get_sign(&self) -> char {
         self.sign
     }

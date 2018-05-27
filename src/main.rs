@@ -124,6 +124,10 @@ impl Board {
     }
 
     fn add_value<T: Player>(&self, coordinate: (usize, usize), player: T) -> Result<Board, String> {
+        if coordinate.0 > 2 || coordinate.1 > 2 {
+            return Err("The field is out of bounds".to_string());
+        }
+        
         if self.grid[coordinate.0][coordinate.1] != '-' {
             return Err("The field is already taken".to_string());
         }
@@ -135,8 +139,49 @@ impl Board {
 }
 
 #[cfg(test)]
-mod game_flow_tests {
+mod game_tests {
     use super::*;
+
+    #[test]
+    fn add_value_in_empty_field_adds_value() {
+        let sign = 'X';
+        let board = Board::new();
+        let player = TestPlayer { sign };
+        let result_board = board.add_value((0, 0), player).unwrap();
+        assert_eq!(result_board.grid[0][0], sign);
+    }
+
+    #[test]
+    fn add_value_with_custom_sign_uses_sign() {
+        let sign = 'A';
+        let board = Board::new();
+        let player = TestPlayer { sign };
+        let result_board = board.add_value((0, 0), player).unwrap();
+        assert_eq!(result_board.grid[0][0], sign);
+    }
+
+    #[test]
+    fn add_value_outside_of_bounds_is_invalid() {
+        let board = Board::new();
+        let player = TestPlayer { sign: 'X' };
+        let result = board.add_value((3, 3), player);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn add_value_to_existing_field_is_invalid() {
+        let board = Board {
+            grid: [
+                ['X'; 3],
+                ['-'; 3],
+                ['-'; 3],
+            ]
+        };
+
+        let player = TestPlayer { sign: 'X' };
+        let result = board.add_value((0, 0), player);
+        assert_eq!(result.is_err(), true);
+    }
 
     #[test]
     fn play_game_with_game_over_does_not_panic() {
@@ -156,5 +201,20 @@ mod game_flow_tests {
         let game_after_turn = next_turn(game);
         let players_are_same = initial_player == game_after_turn.current_player;
         assert_eq!(players_are_same, false)
+    }
+
+    #[derive(PartialEq, Clone, Copy)]
+    struct TestPlayer {
+        pub sign: char,
+    }
+
+    impl Player for TestPlayer {
+        fn get_sign(&self) -> char {
+            self.sign
+        }
+
+        fn get_coordinate(&self) -> Result<(usize, usize), String> {
+            Err("Not implemented".to_string())
+        }
     }
 }
