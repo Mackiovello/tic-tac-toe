@@ -3,7 +3,7 @@ use std::io::{self, BufRead};
 pub trait Player: PartialEq + Copy {
     fn get_sign(&self) -> char;
 
-    fn get_coordinate(&self) -> Result<(usize, usize), String>;
+    fn get_coordinate(&self, grid: [[char; 3]; 3]) -> Result<(usize, usize), String>;
 }
 
 #[derive(PartialEq, Clone, Copy)]
@@ -16,7 +16,7 @@ impl Player for HumanPlayer {
         self.sign
     }
 
-    fn get_coordinate(&self) -> Result<(usize, usize), String> {
+    fn get_coordinate(&self, grid: [[char; 3]; 3]) -> Result<(usize, usize), String> {
         println!("Enter a coordinate in the format x,y:");
         let input = read_line();
         parse_user_input(input)
@@ -30,11 +30,7 @@ fn parse_user_input(input: String) -> Result<(usize, usize), String> {
 
     let vec = input.split(',').collect::<Vec<&str>>();
 
-    if vec.len() > 2 {
-        return Err("You can only pass two values".to_string());
-    }
-
-    if vec.len() == 1 {
+    if vec.len() > 2 || vec.len() == 1 {
         return Err("You have to pass two values".to_string());
     }
 
