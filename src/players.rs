@@ -63,26 +63,62 @@ pub struct RobotPlayer {
     pub sign: char,
 }
 
+impl RobotPlayer {
+    fn get_opponent_sign(&self) -> char {
+        if self.get_sign() == 'X' { 'O' } else { 'X' }
+    }
+}
+
 impl Player for RobotPlayer {
     fn get_sign(&self) -> char {
         self.sign
     }
 
     fn get_coordinate(&self, grid: [[char; 3]; 3]) -> Result<(usize, usize), String> {
-        if let Some(winning_coordinate) = get_winning_row_coordinate(grid, self.sign) {
+        if let Some(winning_coordinate) = winning_move(grid, self.sign) {
             return Ok(winning_coordinate);
-        };
-        
-        if let Some(winning_coordinate) = get_winning_column_coordinate(grid, self.sign) {
-            return Ok(winning_coordinate);
-        };
+        }
 
-        if let Some(winning_coordinate) = get_winning_diagonal_coordinate(grid, self.sign) {
-            return Ok(winning_coordinate);
-        };
+        if let Some(blocking_coordinate) = blocking_move(grid, self.get_opponent_sign()) {
+            return Ok(blocking_coordinate);
+        }
 
         Err("No choice found".to_string())
     }
+}
+
+fn winning_move(grid: [[char; 3]; 3], sign: char) -> Option<(usize, usize)> {
+    let winning_coordinate_functions = [
+        get_winning_row_coordinate,
+        get_winning_column_coordinate,
+        get_winning_diagonal_coordinate
+    ];
+
+    for func in winning_coordinate_functions.iter() {
+        if let Some(winning_coordinate) = func(grid, sign) {
+            return Some(winning_coordinate);
+        };
+    }
+
+    None
+} 
+
+fn blocking_move(grid: [[char; 3]; 3], opponent_sign: char) -> Option<(usize, usize)> {
+    let blocking_coordinate_functions = [
+        get_blocking_row_coordinate
+    ];
+
+    for func in blocking_coordinate_functions.iter() {
+        if let Some(winning_coordinate) = func(grid, opponent_sign) {
+            return Some(winning_coordinate);
+        };
+    }
+
+    None
+}
+
+fn get_blocking_row_coordinate(grid: [[char; 3]; 3], opponent_sign: char) -> Option<(usize, usize)> {
+    get_winning_row_coordinate(grid, opponent_sign)
 }
 
 fn get_winning_row_coordinate(grid: [[char; 3]; 3], sign: char) -> Option<(usize, usize)> {
