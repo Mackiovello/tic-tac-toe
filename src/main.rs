@@ -140,50 +140,6 @@ impl Board {
     }
 }
 
-#[derive(PartialEq, Clone, Copy)]
-pub struct RobotPlayer {
-    pub sign: char,
-}
-
-impl Player for RobotPlayer {
-    fn get_sign(&self) -> char {
-        self.sign
-    }
-
-    fn get_coordinate(&self, grid: [[char; 3]; 3]) -> Result<(usize, usize), String> {
-        Ok((0, 0))
-    }
-}
-
-#[cfg(test)]
-mod robot_player_tests {
-    use super::{RobotPlayer, Player};
-
-    #[test]
-    fn creates_winning_row_if_available() {
-        let player = RobotPlayer { sign: 'O' };
-        let grid = [
-            ['-', '-', 'X'],
-            ['O', '-', 'O'],
-            ['-', 'X', '-']
-        ];
-        let coordinate = player.get_coordinate(grid).unwrap();
-        assert_eq!(coordinate, (1, 1));
-    }
-
-    #[test]
-    fn creates_winning_column_if_available() {
-        let player = RobotPlayer { sign: 'O' };
-        let grid = [
-            ['O', 'X', 'X'],
-            ['O', '-', '-'],
-            ['-', '-', '-']
-        ];
-        let coordinate = player.get_coordinate(grid).unwrap();
-        assert_eq!(coordinate, (0, 2));
-    }
-}
-
 #[cfg(test)]
 mod game_tests {
     use super::*;
