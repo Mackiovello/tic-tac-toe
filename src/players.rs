@@ -105,7 +105,9 @@ fn winning_move(grid: [[char; 3]; 3], sign: char) -> Option<(usize, usize)> {
 
 fn blocking_move(grid: [[char; 3]; 3], opponent_sign: char) -> Option<(usize, usize)> {
     let blocking_coordinate_functions = [
-        get_blocking_row_coordinate
+        get_blocking_row_coordinate,
+        get_blocking_column_coordinate,
+        get_blocking_diagonal_coordinate
     ];
 
     for func in blocking_coordinate_functions.iter() {
@@ -119,6 +121,14 @@ fn blocking_move(grid: [[char; 3]; 3], opponent_sign: char) -> Option<(usize, us
 
 fn get_blocking_row_coordinate(grid: [[char; 3]; 3], opponent_sign: char) -> Option<(usize, usize)> {
     get_winning_row_coordinate(grid, opponent_sign)
+}
+
+fn get_blocking_column_coordinate(grid: [[char; 3]; 3], opponent_sign: char) -> Option<(usize, usize)> {
+    get_winning_column_coordinate(grid, opponent_sign)
+}
+
+fn get_blocking_diagonal_coordinate(grid: [[char; 3]; 3], opponent_sign: char) -> Option<(usize, usize)> {
+    get_winning_diagonal_coordinate(grid, opponent_sign)
 }
 
 fn get_winning_row_coordinate(grid: [[char; 3]; 3], sign: char) -> Option<(usize, usize)> {
@@ -158,7 +168,7 @@ fn get_winning_diagonal_coordinate(grid: [[char; 3]; 3], sign: char) -> Option<(
     let empty_value = bottom_top_diagonal.clone().iter().position(|s| *s == '-');
 
     if empty_value.is_some() && bottom_top_diagonal.iter().filter(|&v| *v == sign).count() == 2 {
-        return Some((empty_value.unwrap(), 2 - empty_value.unwrap()))
+        return Some((2 - empty_value.unwrap(), empty_value.unwrap()))
     }
 
     None
@@ -213,6 +223,42 @@ mod robot_player_tests {
         ];
         let coordinate = player.get_coordinate(grid).unwrap();
         assert_eq!(coordinate, (2, 2)); 
+    }
+
+    #[test]
+    fn blocks_row_if_no_winning_move() {
+        let player = RobotPlayer { sign: 'O' };
+        let grid = [
+            ['-', 'X', 'X'],
+            ['-', 'O', '-'],
+            ['O', '-', '-']
+        ];
+        let coordinate = player.get_coordinate(grid).unwrap();
+        assert_eq!(coordinate, (0, 0));
+    }
+
+    #[test]
+    fn blocks_column_if_no_winning_move() {
+        let player = RobotPlayer { sign: 'O' };
+        let grid = [
+            ['-', '-', 'X'],
+            ['-', 'O', 'X'],
+            ['O', '-', '-']
+        ];
+        let coordinate = player.get_coordinate(grid).unwrap();
+        assert_eq!(coordinate, (2, 2));
+    }
+
+    #[test]
+    fn blocks_diagonal_if_no_winning_move() {
+        let player = RobotPlayer { sign: 'O' };
+        let grid = [
+            ['-', 'O', 'X'],
+            ['-', 'X', 'O'],
+            ['-', '-', '-']
+        ];
+        let coordinate = player.get_coordinate(grid).unwrap();
+        assert_eq!(coordinate, (0, 2));
     }
 }
 
