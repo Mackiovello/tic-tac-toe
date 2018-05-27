@@ -1,8 +1,6 @@
 mod players;
 mod win_condition;
 
-extern crate itertools;
-
 use win_condition::is_winning_grid;
 use std::fmt;
 use players::{HumanPlayer, Player};

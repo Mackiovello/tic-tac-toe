@@ -1,4 +1,6 @@
-use itertools::Itertools;
+extern crate itertools;
+
+use win_condition::itertools::Itertools;
 
 pub fn is_winning_grid(grid: [[char; 3]; 3]) -> bool {
     is_column_win(grid) || is_row_win(grid) || is_diagonal_win(grid)    
