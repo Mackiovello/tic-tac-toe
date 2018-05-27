@@ -12,42 +12,8 @@ fn main() {
     let player_two = HumanPlayer { sign: 'X' };    
     
     let game = Game::new((player_one, player_two));
-    
-    play_game(game);
-}
 
-fn play_game<T: Player>(game: Game<T>) {
-    if game.is_over {
-        println!("Game over");
-    }
-    else {
-        match game.current_player.get_coordinate() {
-            Ok(coordinate) => {
-                match game.board.add_value(coordinate, game.current_player) {
-                    Ok(b) => {
-                        let new_game = Game {
-                            board: b,
-                            players: game.players,
-                            is_over: game.is_over,
-                            current_player: game.current_player
-                        };
-                        let new_game = new_game.next_turn();
-                        println!("{}", new_game.board);
-                        play_game(new_game);
-                    },
-                    Err(e) => {
-                        println!("{}", e);
-                        println!("{}", game.board);
-                    }
-                }
-            }
-            Err(e) => {
-                println!("{}", e);
-                println!("{}", game.board);
-            }
-        }
-
-    }    
+    game.play();    
 }
 
 struct Game<T> where T: Player {
@@ -77,6 +43,42 @@ impl <T> Game<T> where T: Player {
                 self.players.0
             }
         }
+    }
+
+    fn play(&self) {
+        if self.is_over {
+            println!("Game over");
+        }
+        else {
+            match self.current_player.get_coordinate() {
+                Ok(coordinate) => {
+                    match self.board.add_value(coordinate, self.current_player) {
+                        Ok(b) => {
+                            let new_game = Game {
+                                board: b,
+                                players: self.players,
+                                is_over: self.is_over,
+                                current_player: self.current_player
+                            };
+                            let new_game = new_game.next_turn();
+                            println!("{}", new_game.board);
+                            new_game.play();
+                        },
+                        Err(e) => {
+                            println!("{}", e);
+                            println!("{}", self.board);
+                            self.play();
+                        }
+                    }
+                }
+                Err(e) => {
+                    println!("{}", e);
+                    println!("{}", self.board);
+                    self.play();
+                }
+            }
+
+        }  
     }
 }
 
@@ -189,7 +191,7 @@ mod game_tests {
         let mut game = Game::new(players);
         game.is_over = true;
 
-        play_game(game)
+        game.play();
     }
 
     #[test]
