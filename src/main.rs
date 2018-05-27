@@ -1,9 +1,10 @@
 mod players;
+mod win_condition;
 
 extern crate itertools;
 
+use win_condition::is_winning_grid;
 use std::fmt;
-use itertools::Itertools;
 use players::{HumanPlayer, Player};
 
 // TODO: Implement an always-winning bot with https://en.wikipedia.org/wiki/Tic-tac-toe#Strategy
@@ -71,7 +72,7 @@ impl <T> Game<T> where T: Player {
 fn next_turn<T: Player>(game: Game<T>) -> Game<T> {
     Game {
         board: game.board,
-        is_over: is_winning_board(game.board),
+        is_over: is_winning_grid(game.board.grid),
         players: game.players,
         current_player: if game.current_player == game.players.0 {
             game.players.1
@@ -79,55 +80,6 @@ fn next_turn<T: Player>(game: Game<T>) -> Game<T> {
             game.players.0
         }
     }
-}
-
-fn is_winning_board(board: Board) -> bool {
-    is_column_win(board) || is_row_win(board) || is_diagonal_win(board)    
-}
-
-fn is_diagonal_win(board: Board) -> bool {
-    let grid = board.grid;
-
-    let mut right_diagonal: Vec<char> = Vec::new();
-    let mut left_diagonal: Vec<char> = Vec::new();
-    for x in 0..3 {
-        right_diagonal.push(grid[x][x]);
-        left_diagonal.push(grid[x][2-x]);
-    }
-
-    unique_non_empty_row(right_diagonal) || unique_non_empty_row(left_diagonal)
-}
-
-fn unique_non_empty_row(row: Vec<char>) -> bool {
-    row.clone()
-        .into_iter()
-        .unique()
-        .count() == 1 && 
-        row[0] != '-'
-}
-
-fn is_column_win(board: Board) -> bool {
-    let transposed = transpose_board(board);
-    is_row_win(transposed)
-}
-
-fn transpose_board(board: Board) -> Board {
-    let mut transposed = Board::new();
-
-    for i in 0..board.grid.len(){
-        for j in 0..board.grid[i].len(){
-            transposed.grid[i][j] = board.grid[j][i];
-        }
-    }
-
-    transposed
-}
-
-fn is_row_win(board: Board) -> bool {
-    board.grid
-        .iter()
-        .filter(|x| unique_non_empty_row(x.to_vec()))
-        .count() > 0
 }
 
 impl fmt::Display for Board {
@@ -206,90 +158,5 @@ mod game_flow_tests {
         let game_after_turn = next_turn(game);
         let players_are_same = initial_player == game_after_turn.current_player;
         assert_eq!(players_are_same, false)
-    }
-}
-
-#[cfg(test)]
-mod win_condition_tests {
-    use super::*;
-
-    #[test]
-    fn empty_board_is_no_win() {
-        let board = Board {
-            grid: [['-'; 3]; 3]
-        };
-        assert_eq!(is_winning_board(board), false);
-    }
-
-    #[test]
-    fn complete_row_is_win() {
-        let board = Board {
-            grid: [
-                ['O'; 3], 
-                ['-'; 3], 
-                ['-'; 3]
-            ]
-        };
-        assert_eq!(is_winning_board(board), true);
-    }
-
-    #[test]
-    fn diagonal_is_win() {
-        let board = Board {
-            grid: [
-                ['O', '-', '-'],
-                ['-', 'O', '-'],
-                ['-', '-', 'O'],                
-            ]
-        };
-        assert_eq!(is_winning_board(board), true);
-    }
-
-    #[test]
-    fn complete_column_is_win() {
-        let board = Board {
-            grid: [
-                ['O', '-', '-'],
-                ['O', '-', '-'],
-                ['O', '-', '-'],
-            ]
-        };
-        assert_eq!(is_winning_board(board), true);
-    }
-
-    #[test]
-    fn combined_row_is_no_win() {
-        let board = Board {
-            grid: [
-                ['O', 'X', 'X'],
-                ['-', '-', '-'],
-                ['-', '-', '-'],
-            ]
-        };
-        assert_eq!(is_winning_board(board), false);
-    }
-
-    #[test]
-    fn combined_column_is_no_win() {
-        let board = Board {
-            grid: [
-                ['O', '-', '-'],
-                ['X', '-', '-'],
-                ['O', '-', '-'],
-            ]
-        };
-        assert_eq!(is_winning_board(board), false);
-    }
-
-    #[test]
-    fn combined_diagonal_is_no_win() {
-        let board = Board {
-            grid: [
-                ['O', '-', '-'],
-                ['-', 'X', '-'],
-                ['-', '-', 'O'],
-            ]
-        };
-        assert_eq!(is_winning_board(board), false);
     }
 }
