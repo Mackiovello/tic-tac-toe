@@ -79,7 +79,7 @@ impl Player for RobotPlayer {
             return Ok(winning_coordinate);
         }
 
-        if let Some(blocking_coordinate) = blocking_move(grid, self.get_opponent_sign()) {
+        if let Some(blocking_coordinate) = winning_move(grid, self.get_opponent_sign()) {
             return Ok(blocking_coordinate);
         }
 
@@ -102,34 +102,6 @@ fn winning_move(grid: [[char; 3]; 3], sign: char) -> Option<(usize, usize)> {
 
     None
 } 
-
-fn blocking_move(grid: [[char; 3]; 3], opponent_sign: char) -> Option<(usize, usize)> {
-    let blocking_coordinate_functions = [
-        get_blocking_row_coordinate,
-        get_blocking_column_coordinate,
-        get_blocking_diagonal_coordinate
-    ];
-
-    for func in blocking_coordinate_functions.iter() {
-        if let Some(winning_coordinate) = func(grid, opponent_sign) {
-            return Some(winning_coordinate);
-        };
-    }
-
-    None
-}
-
-fn get_blocking_row_coordinate(grid: [[char; 3]; 3], opponent_sign: char) -> Option<(usize, usize)> {
-    get_winning_row_coordinate(grid, opponent_sign)
-}
-
-fn get_blocking_column_coordinate(grid: [[char; 3]; 3], opponent_sign: char) -> Option<(usize, usize)> {
-    get_winning_column_coordinate(grid, opponent_sign)
-}
-
-fn get_blocking_diagonal_coordinate(grid: [[char; 3]; 3], opponent_sign: char) -> Option<(usize, usize)> {
-    get_winning_diagonal_coordinate(grid, opponent_sign)
-}
 
 fn get_winning_row_coordinate(grid: [[char; 3]; 3], sign: char) -> Option<(usize, usize)> {
     for (y, row) in grid.iter().enumerate() {
