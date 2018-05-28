@@ -232,6 +232,80 @@ mod robot_player_tests {
         let coordinate = player.get_coordinate(grid).unwrap();
         assert_eq!(coordinate, (0, 2));
     }
+
+    #[test]
+    fn creates_fork_with_middle_if_no_win_or_block() {
+        let player = RobotPlayer { sign: 'O' };
+        let grid = [
+            ['X', '-', '-'],
+            ['-', '-', 'O'],
+            ['O', 'X', '-']
+        ]; 
+        let coordinate = player.get_coordinate(grid).unwrap();
+        assert_eq!(coordinate, (1, 1));
+    }
+
+    #[test]
+    fn creates_fork_with_side_if_no_win_or_block() {
+        let player = RobotPlayer { sign: 'O' };
+        let grid = [
+            ['-', 'O', '-'],
+            ['-', 'X', 'O'],
+            ['-', 'X', '-']
+        ]; 
+        let coordinate = player.get_coordinate(grid).unwrap();
+        assert_eq!(coordinate, (2, 0));
+    }
+
+    #[test]
+    fn blocks_fork_if_no_win_or_block() {
+        let player = RobotPlayer { sign: 'X' };
+        let grid = [
+            ['-', 'O', '-'],
+            ['-', 'X', 'O'],
+            ['-', 'X', '-']
+        ]; 
+        let coordinate = player.get_coordinate(grid).unwrap();
+        assert_eq!(coordinate, (2, 0));
+    } 
+
+    #[test]
+    fn prevents_fork_opportunity_if_no_win_or_block() {
+        let player = RobotPlayer { sign: 'O' };
+        let grid = [
+            ['X', '-', '-'],
+            ['-', 'O', '-'],
+            ['-', '-', 'X']
+        ]; 
+        let coordinate = player.get_coordinate(grid).unwrap();
+        let good_choices: Vec<(usize, usize)> = vec![(0, 1), (1, 0), (1, 2), (2, 1)];
+        assert_eq!(good_choices.iter().any(|x| x == coordinate), true);
+    }
+
+    #[test]
+    fn take_center_when_possible() {
+        let player = RobotPlayer { sign: 'O' };
+        let grid = [
+            ['X', '-', '-'],
+            ['-', '-', '-'],
+            ['-', '-', '-']
+        ]; 
+        let coordinate = player.get_coordinate(grid).unwrap();
+        assert_eq!(coordinate, (1, 1));
+    }
+
+    #[test]
+    fn takes_corner_when_possible() {
+        let player = RobotPlayer { sign: 'O' };
+        let grid = [
+            ['-', '-', '-'],
+            ['-', 'X', '-'],
+            ['-', '-', '-']
+        ]; 
+        let coordinate = player.get_coordinate(grid).unwrap();
+        let good_choices: Vec<(usize, usize)> = vec![(0, 0), (2, 0), (2, 2), (0, 2)];
+        assert_eq!(good_choices.iter().any(|x| x == coordinate), true);
+    }
 }
 
 #[cfg(test)]
