@@ -279,7 +279,7 @@ mod robot_player_tests {
         ]; 
         let coordinate = player.get_coordinate(grid).unwrap();
         let good_choices: Vec<(usize, usize)> = vec![(0, 1), (1, 0), (1, 2), (2, 1)];
-        assert_eq!(good_choices.iter().any(|x| x == coordinate), true);
+        assert_eq!(good_choices.iter().any(|x| *x == coordinate), true);
     }
 
     #[test]
@@ -304,7 +304,7 @@ mod robot_player_tests {
         ]; 
         let coordinate = player.get_coordinate(grid).unwrap();
         let good_choices: Vec<(usize, usize)> = vec![(0, 0), (2, 0), (2, 2), (0, 2)];
-        assert_eq!(good_choices.iter().any(|x| x == coordinate), true);
+        assert_eq!(good_choices.iter().any(|x| *x == coordinate), true);
     }
 }
 
