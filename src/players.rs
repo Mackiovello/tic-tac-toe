@@ -95,15 +95,29 @@ fn fork_move(grid: [[char; 3]; 3], sign: char) -> Option<(usize, usize)> {
     let empty_squares: Vec<(usize, usize)> = get_empty_squares(grid, sign); 
     
     for square in empty_squares {
-        
+        let attempted_grid = try_place(grid, square, sign);
+        if two_winning_moves(grid, sign) {
+            return Some(square)
+        }
     }
-    // For each empty square
-    //   Try place a value
-    //   If coordinate creates two winning moves
-    //   Return the coordinate
 
     None
 }
+
+fn two_winning_moves(grid: [[char; 3]; 3], sign: char) -> bool {
+    match winning_move(grid, sign) {
+        Some(coordinate) => {
+	    // Place the opponents sign and check another time
+            // If it's true the second time, return true
+        },
+        None => return false,
+    }
+    false
+}
+
+fn try_place(grid: [[char; 3]; 3], coordinate: (usize, usize), sign: char) -> [[char; 3]; 3] {
+    grid
+} 
 
 fn get_empty_squares(grid: [[char; 3]; 3], sign: char) -> Vec<(usize, usize)> {
     // Return the coordinates for all the empty squares
