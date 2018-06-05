@@ -82,9 +82,32 @@ impl Player for RobotPlayer {
         if let Some(blocking_coordinate) = winning_move(grid, self.get_opponent_sign()) {
             return Ok(blocking_coordinate);
         }
+        
+        if let Some(fork_coordinate) = fork_move(grid, self.sign) {
+            return Ok(fork_coordinate);
+        }
 
         Err("No choice found".to_string())
     }
+}
+
+fn fork_move(grid: [[char; 3]; 3], sign: char) -> Option<(usize, usize)> {
+    let empty_squares: Vec<(usize, usize)> = get_empty_squares(grid, sign); 
+    
+    for square in empty_squares {
+        
+    }
+    // For each empty square
+    //   Try place a value
+    //   If coordinate creates two winning moves
+    //   Return the coordinate
+
+    None
+}
+
+fn get_empty_squares(grid: [[char; 3]; 3], sign: char) -> Vec<(usize, usize)> {
+    // Return the coordinates for all the empty squares
+    vec![(0, 0); 3]
 }
 
 fn winning_move(grid: [[char; 3]; 3], sign: char) -> Option<(usize, usize)> {
