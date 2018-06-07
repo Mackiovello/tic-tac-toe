@@ -1,9 +1,11 @@
 mod players;
 mod win_condition;
 mod board;
+mod human_player;
 
 use win_condition::is_winning_grid;
-use players::{HumanPlayer, Player};
+use players::Player;
+use human_player::HumanPlayer;
 
 fn main() {
     let player_one = HumanPlayer { sign: 'O' };
