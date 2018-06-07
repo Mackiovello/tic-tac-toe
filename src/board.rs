@@ -1,4 +1,4 @@
-use players;
+// use players;
 
 use std::fmt;
 
@@ -14,11 +14,13 @@ impl Board {
         }
     }
 
-    pub fn add_value<T: players::Player>(
-        &self,
-        coordinate: (usize, usize),
-        player: T,
-    ) -> Result<Board, String> {
+    pub fn transpose(&self) -> Board {
+        Board {
+            grid: transpose_grid(self.grid),
+        }
+    }
+
+    pub fn add_value(&self, coordinate: (usize, usize), sign: char) -> Result<Board, String> {
         if coordinate.0 > 2 || coordinate.1 > 2 {
             return Err("The field is out of bounds".to_string());
         }
@@ -28,9 +30,20 @@ impl Board {
         }
 
         let mut new_board = self.clone();
-        new_board.grid[coordinate.0][coordinate.1] = player.get_sign();
+        new_board.grid[coordinate.0][coordinate.1] = sign;
         Ok(new_board)
     }
+}
+
+fn transpose_grid(grid: [[char; 3]; 3]) -> [[char; 3]; 3] {
+    let mut transposed = [['-'; 3]; 3];
+
+    for i in 0..3 {
+        for j in 0..3 {
+            transposed[i][j] = grid[j][i];
+        }
+    }
+    transposed
 }
 
 impl fmt::Display for Board {

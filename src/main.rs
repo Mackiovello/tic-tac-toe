@@ -44,7 +44,7 @@ where
     fn next_turn(&self) -> Self {
         Game {
             board: self.board,
-            is_over: is_winning_grid(self.board.grid),
+            is_over: is_winning_grid(self.board),
             players: self.players,
             current_player: if self.current_player == self.players.0 {
                 self.players.1
@@ -58,8 +58,10 @@ where
         if self.is_over {
             println!("Game over");
         } else {
-            match self.current_player.get_coordinate(self.board.grid) {
-                Ok(coordinate) => match self.board.add_value(coordinate, self.current_player) {
+            match self.current_player.get_coordinate(self.board) {
+                Ok(coordinate) => match self.board
+                    .add_value(coordinate, self.current_player.get_sign())
+                {
                     Ok(b) => {
                         let new_game = Game {
                             board: b,
@@ -90,13 +92,14 @@ where
 #[cfg(test)]
 mod game_tests {
     use super::*;
+    use board::Board;
 
     #[test]
     fn add_value_in_empty_field_adds_value() {
         let sign = 'X';
         let board = board::Board::new();
         let player = TestPlayer { sign };
-        let result_board = board.add_value((0, 0), player).unwrap();
+        let result_board = board.add_value((0, 0), player.get_sign()).unwrap();
         assert_eq!(result_board.grid[0][0], sign);
     }
 
@@ -105,7 +108,7 @@ mod game_tests {
         let sign = 'A';
         let board = board::Board::new();
         let player = TestPlayer { sign };
-        let result_board = board.add_value((0, 0), player).unwrap();
+        let result_board = board.add_value((0, 0), player.get_sign()).unwrap();
         assert_eq!(result_board.grid[0][0], sign);
     }
 
@@ -113,7 +116,7 @@ mod game_tests {
     fn add_value_outside_of_bounds_is_invalid() {
         let board = board::Board::new();
         let player = TestPlayer { sign: 'X' };
-        let result = board.add_value((3, 3), player);
+        let result = board.add_value((3, 3), player.get_sign());
         assert_eq!(result.is_err(), true);
     }
 
@@ -124,7 +127,7 @@ mod game_tests {
         };
 
         let player = TestPlayer { sign: 'X' };
-        let result = board.add_value((0, 0), player);
+        let result = board.add_value((0, 0), player.get_sign());
         assert_eq!(result.is_err(), true);
     }
 
@@ -158,7 +161,7 @@ mod game_tests {
             self.sign
         }
 
-        fn get_coordinate(&self, _grid: [[char; 3]; 3]) -> Result<(usize, usize), String> {
+        fn get_coordinate(&self, _board: Board) -> Result<(usize, usize), String> {
             Err("Not implemented".to_string())
         }
     }
