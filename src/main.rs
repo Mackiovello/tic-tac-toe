@@ -2,10 +2,12 @@ mod players;
 mod win_condition;
 mod board;
 mod human_player;
+mod robot_player;
 
 use win_condition::is_winning_grid;
 use players::Player;
 use human_player::HumanPlayer;
+use robot_player::RobotPlayer;
 
 fn main() {
     let player_one = HumanPlayer { sign: 'O' };
@@ -16,20 +18,14 @@ fn main() {
     game.play();
 }
 
-struct Game<T>
-where
-    T: Player,
-{
+struct Game<T: Player> {
     board: board::Board,
     players: (T, T),
     current_player: T,
     is_over: bool,
 }
 
-impl<T> Game<T>
-where
-    T: Player,
-{
+impl<T: Player> Game<T> {
     fn new(players: (T, T)) -> Game<T> {
         let board = board::Board::new();
         let current_player = players.0;
