@@ -34,8 +34,17 @@ impl Player for RobotPlayer {
             return Ok(fork_coordinate);
         }
 
+        if let Some(block_fork_coordinate) = block_fork_move(board, self.sign) {
+            return Ok(block_fork_coordinate);
+        }
+
         Err("No choice found".to_string())
     }
+}
+
+fn block_fork_move(board: Board, sign: char) -> Option<(usize, usize)> {
+    let opponent_sign = if sign == 'X' { 'O' } else { 'X' };
+    fork_move(board, opponent_sign)
 }
 
 fn fork_move(board: Board, sign: char) -> Option<(usize, usize)> {
@@ -228,10 +237,9 @@ mod robot_player_tests {
     }
 
     #[test]
-    #[ignore]
     fn blocks_fork_if_no_win_or_block() {
         let player = RobotPlayer { sign: 'X' };
-        let grid = [['-', 'O', '-'], ['-', 'X', 'O'], ['-', 'X', '-']];
+        let grid = [['-', 'O', '-'], ['-', '-', 'O'], ['-', 'X', '-']];
         let coordinate = player.get_coordinate(Board { grid }).unwrap();
         assert_eq!(coordinate, (2, 0));
     }
