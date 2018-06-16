@@ -56,7 +56,7 @@ impl fmt::Display for Board {
 
         write!(
             f,
-            "          0     1     2
+            "  0     1     2
              |     |
     0     {}  |  {}  |  {}
         _____|_____|_____

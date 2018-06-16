@@ -66,9 +66,17 @@ fn two_winning_moves(board: Board, sign: char) -> bool {
     }
 }
 
-fn get_empty_squares(_board: Board, _sign: char) -> Vec<(usize, usize)> {
-    // Return the coordinates for all the empty squares
-    vec![(0, 0); 3]
+fn get_empty_squares(board: Board, _sign: char) -> Vec<(usize, usize)> {
+    let mut empty_squares: Vec<(usize, usize)> = Vec::new();
+
+    for (y, row) in board.grid.iter().enumerate() {
+        for (x, value) in row.iter().enumerate() {
+            if *value == '-' {
+                empty_squares.push((y, x))
+            }
+        }
+    }
+    empty_squares
 }
 
 fn winning_move(board: Board, sign: char) -> Option<(usize, usize)> {
@@ -207,10 +215,9 @@ mod robot_player_tests {
     }
 
     #[test]
-    #[ignore]
     fn creates_fork_with_middle_if_no_win_or_block() {
         let player = RobotPlayer { sign: 'O' };
-        let grid = [['X', '-', '-'], ['-', '-', 'O'], ['O', 'X', '-']];
+        let grid = [['-', '-', '-'], ['X', '-', 'X'], ['O', 'X', 'O']];
         let coordinate = player.get_coordinate(Board { grid }).unwrap();
         assert_eq!(coordinate, (1, 1));
     }
