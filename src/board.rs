@@ -25,12 +25,12 @@ impl Board {
             return Err("The field is out of bounds".to_string());
         }
 
-        if self.grid[coordinate.0][coordinate.1] != '-' {
+        if self.grid[coordinate.1][coordinate.0] != '-' {
             return Err("The field is already taken".to_string());
         }
 
         let mut new_board = self.clone();
-        new_board.grid[coordinate.0][coordinate.1] = sign;
+        new_board.grid[coordinate.1][coordinate.0] = sign;
         Ok(new_board)
     }
 }

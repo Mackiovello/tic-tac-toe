@@ -56,13 +56,10 @@ fn two_winning_moves(board: Board, sign: char) -> bool {
     match winning_move(board, sign) {
         Some(coordinate) => {
             let attempted_grid = board.add_value(coordinate, opponent_sign);
-            if let Some(_) = winning_move(attempted_grid.unwrap(), sign) {
-                return true;
-            } else {
-                return false;
-            }
+
+            winning_move(attempted_grid.unwrap(), sign).is_some()
         }
-        None => return false,
+        None => false,
     }
 }
 
@@ -72,7 +69,7 @@ fn get_empty_squares(board: Board, _sign: char) -> Vec<(usize, usize)> {
     for (y, row) in board.grid.iter().enumerate() {
         for (x, value) in row.iter().enumerate() {
             if *value == '-' {
-                empty_squares.push((y, x))
+                empty_squares.push((x, y))
             }
         }
     }
@@ -223,7 +220,6 @@ mod robot_player_tests {
     }
 
     #[test]
-    #[ignore]
     fn creates_fork_with_side_if_no_win_or_block() {
         let player = RobotPlayer { sign: 'O' };
         let grid = [['-', 'O', '-'], ['-', 'X', 'O'], ['-', 'X', '-']];
