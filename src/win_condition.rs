@@ -3,7 +3,7 @@ extern crate itertools;
 use win_condition::itertools::Itertools;
 use board::Board;
 
-pub fn is_winning_grid(board: Board) -> bool {
+pub fn is_winning_board(board: Board) -> bool {
     is_column_win(board) || is_row_win(board) || is_diagonal_win(board)
 }
 
@@ -41,44 +41,45 @@ mod win_condition_tests {
 
     #[test]
     fn empty_board_is_no_win() {
-        assert!(!is_winning_grid(Board {
+        let board = Board {
             grid: [['-'; 3]; 3],
-        }));
+        };
+        assert!(!is_winning_board(board));
     }
 
     #[test]
     fn complete_row_is_win() {
         let grid = [['O'; 3], ['-'; 3], ['-'; 3]];
-        assert!(is_winning_grid(Board { grid }));
+        assert!(is_winning_board(Board { grid }));
     }
 
     #[test]
     fn diagonal_is_win() {
         let grid = [['O', '-', '-'], ['-', 'O', '-'], ['-', '-', 'O']];
-        assert!(is_winning_grid(Board { grid }));
+        assert!(is_winning_board(Board { grid }));
     }
 
     #[test]
     fn complete_column_is_win() {
         let grid = [['O', '-', '-'], ['O', '-', '-'], ['O', '-', '-']];
-        assert!(is_winning_grid(Board { grid }));
+        assert!(is_winning_board(Board { grid }));
     }
 
     #[test]
     fn combined_row_is_no_win() {
         let grid = [['O', 'X', 'X'], ['-', '-', '-'], ['-', '-', '-']];
-        assert!(!is_winning_grid(Board { grid }));
+        assert!(!is_winning_board(Board { grid }));
     }
 
     #[test]
     fn combined_column_is_no_win() {
         let grid = [['O', '-', '-'], ['X', '-', '-'], ['O', '-', '-']];
-        assert!(!is_winning_grid(Board { grid }));
+        assert!(!is_winning_board(Board { grid }));
     }
 
     #[test]
     fn combined_diagonal_is_no_win() {
         let grid = [['O', '-', '-'], ['-', 'X', '-'], ['-', '-', 'O']];
-        assert!(!is_winning_grid(Board { grid }));
+        assert!(!is_winning_board(Board { grid }));
     }
 }

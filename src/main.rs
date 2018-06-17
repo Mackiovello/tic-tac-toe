@@ -4,7 +4,7 @@ mod board;
 mod user_input;
 mod robot_player;
 
-use win_condition::is_winning_grid;
+use win_condition::is_winning_board;
 use players::Player;
 use user_input::get_coordinate_from_user;
 use robot_player::get_robot_coordinate;
@@ -49,7 +49,7 @@ impl Game {
     fn next_turn(&self) -> Self {
         Game {
             board: self.board,
-            is_over: is_winning_grid(self.board),
+            is_over: is_winning_board(self.board),
             players: self.players,
             current_player: if self.current_player == self.players.0 {
                 self.players.1
