@@ -1,5 +1,5 @@
 use board::Board;
-use players::Player;
+use players::{Player, Player2};
 
 #[derive(PartialEq, Clone, Copy)]
 pub struct RobotPlayer {
@@ -46,6 +46,33 @@ impl Player for RobotPlayer {
 
         Err("No choice found".to_string())
     }
+}
+
+pub fn get_robot_coordinate(player: Player2, board: Board) -> Result<(usize, usize), String> {
+    let opponent_sign = if player.sign == 'X' { 'O' } else { 'X' };
+
+    if let Some(winning_coordinate) = winning_move(board, player.sign) {
+        return Ok(winning_coordinate);
+    }
+
+    if let Some(blocking_coordinate) = winning_move(board, opponent_sign) {
+        return Ok(blocking_coordinate);
+    }
+
+    if let Some(fork_coordinate) = fork_move(board, player.sign) {
+        return Ok(fork_coordinate);
+    }
+
+    if let Some(block_fork_coordinate) = fork_move(board, opponent_sign) {
+        return Ok(block_fork_coordinate);
+    }
+
+    if let Some(block_fork_opportunity_coordinate) = block_fork_opportunity_move(board, player.sign)
+    {
+        return Ok(block_fork_opportunity_coordinate);
+    }
+
+    Err("No choice found".to_string())
 }
 
 fn block_fork_opportunity_move(board: Board, sign: char) -> Option<(usize, usize)> {

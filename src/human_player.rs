@@ -1,6 +1,6 @@
 use std::io::{self, BufRead};
 use board::Board;
-use players::Player;
+use players::{Player, Player2};
 
 #[derive(PartialEq, Clone, Copy)]
 pub struct HumanPlayer {
@@ -17,6 +17,12 @@ impl Player for HumanPlayer {
         let input = read_line();
         parse_user_input(input)
     }
+}
+
+pub fn get_coordinate(_player: Player2, _board: Board) -> Result<(usize, usize), String> {
+    println!("Enter a coordinate in the format x,y:");
+    let input = read_line();
+    parse_user_input(input)
 }
 
 fn parse_user_input(input: String) -> Result<(usize, usize), String> {
