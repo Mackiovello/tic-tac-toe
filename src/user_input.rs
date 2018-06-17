@@ -1,25 +1,7 @@
 use std::io::{self, BufRead};
 use board::Board;
-use players::{Player, Player2};
 
-#[derive(PartialEq, Clone, Copy)]
-pub struct HumanPlayer {
-    pub sign: char,
-}
-
-impl Player for HumanPlayer {
-    fn get_sign(&self) -> char {
-        self.sign
-    }
-
-    fn get_coordinate(&self, _board: Board) -> Result<(usize, usize), String> {
-        println!("Enter a coordinate in the format x,y:");
-        let input = read_line();
-        parse_user_input(input)
-    }
-}
-
-pub fn get_coordinate(_player: Player2, _board: Board) -> Result<(usize, usize), String> {
+pub fn get_coordinate_from_user(_sign: char, _board: Board) -> Result<(usize, usize), String> {
     println!("Enter a coordinate in the format x,y:");
     let input = read_line();
     parse_user_input(input)
@@ -36,8 +18,8 @@ fn parse_user_input(input: String) -> Result<(usize, usize), String> {
         return Err("You have to pass two values".to_string());
     }
 
-    let x_result = vec[0].trim().parse::<usize>();
-    let y_result = vec[1].trim().parse::<usize>();
+    let x_result = vec[1].trim().parse::<usize>();
+    let y_result = vec[0].trim().parse::<usize>();
 
     if x_result.is_ok() && y_result.is_ok() {
         let x = x_result.unwrap();

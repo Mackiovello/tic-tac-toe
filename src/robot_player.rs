@@ -1,57 +1,9 @@
 use board::Board;
-use players::{Player, Player2};
 
-#[derive(PartialEq, Clone, Copy)]
-pub struct RobotPlayer {
-    pub sign: char,
-}
+pub fn get_robot_coordinate(sign: char, board: Board) -> Result<(usize, usize), String> {
+    let opponent_sign = if sign == 'X' { 'O' } else { 'X' };
 
-impl RobotPlayer {
-    fn get_opponent_sign(&self) -> char {
-        if self.get_sign() == 'X' {
-            'O'
-        } else {
-            'X'
-        }
-    }
-}
-
-impl Player for RobotPlayer {
-    fn get_sign(&self) -> char {
-        self.sign
-    }
-
-    fn get_coordinate(&self, board: Board) -> Result<(usize, usize), String> {
-        if let Some(winning_coordinate) = winning_move(board, self.sign) {
-            return Ok(winning_coordinate);
-        }
-
-        if let Some(blocking_coordinate) = winning_move(board, self.get_opponent_sign()) {
-            return Ok(blocking_coordinate);
-        }
-
-        if let Some(fork_coordinate) = fork_move(board, self.sign) {
-            return Ok(fork_coordinate);
-        }
-
-        if let Some(block_fork_coordinate) = fork_move(board, self.get_opponent_sign()) {
-            return Ok(block_fork_coordinate);
-        }
-
-        if let Some(block_fork_opportunity_coordinate) =
-            block_fork_opportunity_move(board, self.sign)
-        {
-            return Ok(block_fork_opportunity_coordinate);
-        }
-
-        Err("No choice found".to_string())
-    }
-}
-
-pub fn get_robot_coordinate(player: Player2, board: Board) -> Result<(usize, usize), String> {
-    let opponent_sign = if player.sign == 'X' { 'O' } else { 'X' };
-
-    if let Some(winning_coordinate) = winning_move(board, player.sign) {
+    if let Some(winning_coordinate) = winning_move(board, sign) {
         return Ok(winning_coordinate);
     }
 
@@ -59,7 +11,7 @@ pub fn get_robot_coordinate(player: Player2, board: Board) -> Result<(usize, usi
         return Ok(blocking_coordinate);
     }
 
-    if let Some(fork_coordinate) = fork_move(board, player.sign) {
+    if let Some(fork_coordinate) = fork_move(board, sign) {
         return Ok(fork_coordinate);
     }
 
@@ -67,20 +19,19 @@ pub fn get_robot_coordinate(player: Player2, board: Board) -> Result<(usize, usi
         return Ok(block_fork_coordinate);
     }
 
-    if let Some(block_fork_opportunity_coordinate) = block_fork_opportunity_move(board, player.sign)
-    {
+    if let Some(block_fork_opportunity_coordinate) = block_fork_opportunity_move(board, sign) {
         return Ok(block_fork_opportunity_coordinate);
     }
 
-    if let Some(center_coordinate) = take_center_move(board, player.sign) {
+    if let Some(center_coordinate) = take_center_move(board, sign) {
         return Ok(center_coordinate);
     }
 
-    if let Some(corner_coordinate) = take_corner_move(board, player.sign) {
+    if let Some(corner_coordinate) = take_corner_move(board, sign) {
         return Ok(corner_coordinate);
     }
 
-    if let Some(side_coordinate) = take_side_move(board, player.sign) {
+    if let Some(side_coordinate) = take_side_move(board, sign) {
         return Ok(side_coordinate);
     }
 
@@ -277,125 +228,103 @@ mod tests {
 
     #[test]
     fn creates_winning_row_if_available() {
-        let player = RobotPlayer { sign: 'O' };
         let grid = [['-', '-', 'X'], ['O', '-', 'O'], ['-', 'X', '-']];
-        let coordinate = player.get_coordinate(Board { grid }).unwrap();
+        let coordinate = get_robot_coordinate('O', Board { grid }).unwrap();
         assert_eq!(coordinate, (1, 1));
     }
 
     #[test]
     fn creates_winning_column_if_available() {
-        let player = RobotPlayer { sign: 'O' };
         let grid = [['O', 'X', 'X'], ['O', '-', '-'], ['-', '-', '-']];
-        let coordinate = player.get_coordinate(Board { grid }).unwrap();
+        let coordinate = get_robot_coordinate('O', Board { grid }).unwrap();
         assert_eq!(coordinate, (0, 2));
     }
 
     #[test]
     fn creates_winning_diagonal_if_available() {
-        let player = RobotPlayer { sign: 'O' };
         let grid = [['O', 'X', 'X'], ['-', 'O', '-'], ['-', '-', '-']];
-        let coordinate = player.get_coordinate(Board { grid }).unwrap();
+        let coordinate = get_robot_coordinate('O', Board { grid }).unwrap();
         assert_eq!(coordinate, (2, 2));
     }
 
     #[test]
     fn blocks_row_if_no_winning_move() {
-        let player = RobotPlayer { sign: 'O' };
         let grid = [['-', 'X', 'X'], ['-', 'O', '-'], ['O', '-', '-']];
-        let coordinate = player.get_coordinate(Board { grid }).unwrap();
+        let coordinate = get_robot_coordinate('O', Board { grid }).unwrap();
         assert_eq!(coordinate, (0, 0));
     }
 
     #[test]
     fn blocks_column_if_no_winning_move() {
-        let player = RobotPlayer { sign: 'O' };
         let grid = [['-', '-', 'X'], ['-', 'O', 'X'], ['O', '-', '-']];
-        let coordinate = player.get_coordinate(Board { grid }).unwrap();
+        let coordinate = get_robot_coordinate('O', Board { grid }).unwrap();
         assert_eq!(coordinate, (2, 2));
     }
 
     #[test]
     fn blocks_diagonal_if_no_winning_move() {
-        let player = RobotPlayer { sign: 'O' };
         let grid = [['-', 'O', 'X'], ['-', 'X', 'O'], ['-', '-', '-']];
-        let coordinate = player.get_coordinate(Board { grid }).unwrap();
+        let coordinate = get_robot_coordinate('O', Board { grid }).unwrap();
         assert_eq!(coordinate, (0, 2));
     }
 
     #[test]
     fn creates_fork_with_middle_if_no_win_or_block() {
-        let player = RobotPlayer { sign: 'O' };
         let grid = [['-', '-', '-'], ['X', '-', 'X'], ['O', 'X', 'O']];
-        let coordinate = player.get_coordinate(Board { grid }).unwrap();
+        let coordinate = get_robot_coordinate('O', Board { grid }).unwrap();
         assert_eq!(coordinate, (1, 1));
     }
 
     #[test]
     fn creates_fork_with_side_if_no_win_or_block() {
-        let player = RobotPlayer { sign: 'O' };
         let grid = [['-', 'O', '-'], ['-', 'X', 'O'], ['-', 'X', '-']];
-        let coordinate = player.get_coordinate(Board { grid }).unwrap();
+        let coordinate = get_robot_coordinate('O', Board { grid }).unwrap();
         assert_eq!(coordinate, (2, 0));
     }
 
     #[test]
     fn blocks_fork_if_no_win_or_block() {
-        let player = RobotPlayer { sign: 'X' };
         let grid = [['-', 'O', '-'], ['-', '-', 'O'], ['-', 'X', '-']];
-        let coordinate = player.get_coordinate(Board { grid }).unwrap();
+        let coordinate = get_robot_coordinate('X', Board { grid }).unwrap();
         assert_eq!(coordinate, (2, 0));
     }
 
     #[test]
     fn prevents_fork_opportunity_if_no_win_or_block() {
-        let player = RobotPlayer { sign: 'O' };
         let grid = [['X', '-', '-'], ['-', 'O', '-'], ['-', '-', 'X']];
-        let coordinate = player.get_coordinate(Board { grid }).unwrap();
+        let coordinate = get_robot_coordinate('O', Board { grid }).unwrap();
         let good_choices: Vec<(usize, usize)> = vec![(0, 2), (2, 0)];
         assert!(good_choices.iter().any(|x| *x == coordinate));
     }
 
     #[test]
     fn take_center_when_possible() {
-        let player = RobotPlayer { sign: 'O' };
         let grid = [['X', '-', '-'], ['-', '-', '-'], ['-', '-', '-']];
-        let coordinate = player.get_coordinate(Board { grid }).unwrap();
+        let coordinate = get_robot_coordinate('O', Board { grid }).unwrap();
         assert_eq!(coordinate, (1, 1));
     }
 
     #[test]
     fn takes_corner_when_possible() {
-        let player = RobotPlayer { sign: 'O' };
         let grid = [['-', '-', '-'], ['-', 'X', '-'], ['-', '-', '-']];
-        let coordinate = player.get_coordinate(Board { grid }).unwrap();
+        let coordinate = get_robot_coordinate('O', Board { grid }).unwrap();
         let good_choices: Vec<(usize, usize)> = vec![(0, 0), (2, 0), (2, 2), (0, 2)];
         assert_eq!(good_choices.iter().any(|x| *x == coordinate), true);
     }
 
     #[test]
     fn takes_corner_when_only_corner_and_side_left() {
-        let player = Player2 {
-            sign: '0',
-            get_coordinate: get_robot_coordinate,
-        };
-
         let grid = [['O', 'O', 'X'], ['X', 'X', 'O'], ['O', '-', '-']];
 
-        let coordinate = get_robot_coordinate(player, Board { grid }).unwrap();
+        let coordinate = get_robot_coordinate('O', Board { grid }).unwrap();
         assert_eq!(coordinate, (2, 2));
     }
 
     #[test]
     fn takes_side_if_only_sides_left() {
-        let player = Player2 {
-            sign: '0',
-            get_coordinate: get_robot_coordinate,
-        };
-
         let grid = [['O', 'O', 'X'], ['X', 'X', 'O'], ['O', '-', 'X']];
 
-        let coordinate = get_robot_coordinate(player, Board { grid }).unwrap();
+        let coordinate = get_robot_coordinate('O', Board { grid }).unwrap();
         assert_eq!(coordinate, (1, 2));
     }
 }

@@ -1,21 +1,21 @@
 mod players;
 mod win_condition;
 mod board;
-mod human_player;
+mod user_input;
 mod robot_player;
 
 use win_condition::is_winning_grid;
-use players::{Player, Player2};
-use human_player::{get_coordinate, HumanPlayer};
-use robot_player::{get_robot_coordinate, RobotPlayer};
+use players::Player;
+use user_input::get_coordinate_from_user;
+use robot_player::get_robot_coordinate;
 
 fn main() {
-    let player_one = Player2 {
+    let player_one = Player {
         sign: 'O',
-        get_coordinate: get_coordinate,
+        get_coordinate: get_coordinate_from_user,
     };
 
-    let player_two = Player2 {
+    let player_two = Player {
         sign: 'X',
         get_coordinate: get_robot_coordinate,
     };
@@ -27,13 +27,13 @@ fn main() {
 
 struct Game {
     board: board::Board,
-    players: (Player2, Player2),
-    current_player: Player2,
+    players: (Player, Player),
+    current_player: Player,
     is_over: bool,
 }
 
 impl Game {
-    fn new(players: (Player2, Player2)) -> Game {
+    fn new(players: (Player, Player)) -> Game {
         let board = board::Board::new();
         let current_player = players.0;
         let players = players;
@@ -63,7 +63,7 @@ impl Game {
         if self.is_over {
             println!("Game over");
         } else {
-            match (self.current_player.get_coordinate)(self.current_player, self.board) {
+            match (self.current_player.get_coordinate)(self.current_player.sign, self.board) {
                 Ok(coordinate) => {
                     match self.board.add_value(coordinate, self.current_player.sign) {
                         Ok(b) => {
@@ -101,7 +101,7 @@ mod game_tests {
     use super::*;
     use board::Board;
 
-    fn dummy_get_coordinate(_player: Player2, _board: Board) -> Result<(usize, usize), String> {
+    fn dummy_get_coordinate(_sign: char, _board: Board) -> Result<(usize, usize), String> {
         Err("Not implemented".to_string())
     }
 
@@ -109,7 +109,7 @@ mod game_tests {
     fn add_value_in_empty_field_adds_value() {
         let sign = 'X';
         let board = board::Board::new();
-        let player = Player2 {
+        let player = Player {
             sign,
             get_coordinate: dummy_get_coordinate,
         };
@@ -121,7 +121,7 @@ mod game_tests {
     fn add_value_with_custom_sign_uses_sign() {
         let sign = 'A';
         let board = board::Board::new();
-        let player = Player2 {
+        let player = Player {
             sign,
             get_coordinate: dummy_get_coordinate,
         };
@@ -133,7 +133,7 @@ mod game_tests {
     fn add_value_outside_of_bounds_is_invalid() {
         let board = board::Board::new();
 
-        let player = Player2 {
+        let player = Player {
             sign: 'X',
             get_coordinate: dummy_get_coordinate,
         };
@@ -148,7 +148,7 @@ mod game_tests {
             grid: [['X'; 3], ['-'; 3], ['-'; 3]],
         };
 
-        let player = Player2 {
+        let player = Player {
             sign: 'X',
             get_coordinate: dummy_get_coordinate,
         };
@@ -160,11 +160,11 @@ mod game_tests {
     #[test]
     fn play_game_with_game_over_does_not_panic() {
         let players = (
-            Player2 {
+            Player {
                 sign: 'O',
                 get_coordinate: dummy_get_coordinate,
             },
-            Player2 {
+            Player {
                 sign: 'X',
                 get_coordinate: dummy_get_coordinate,
             },
@@ -178,11 +178,11 @@ mod game_tests {
     #[test]
     fn next_turn_switches_current_player() {
         let players = (
-            Player2 {
+            Player {
                 sign: 'O',
                 get_coordinate: dummy_get_coordinate,
             },
-            Player2 {
+            Player {
                 sign: 'X',
                 get_coordinate: dummy_get_coordinate,
             },
