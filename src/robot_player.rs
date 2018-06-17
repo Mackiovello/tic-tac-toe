@@ -51,23 +51,46 @@ impl Player for RobotPlayer {
 fn block_fork_opportunity_move(board: Board, sign: char) -> Option<(usize, usize)> {
     let empty_squares: Vec<(usize, usize)> = get_empty_squares(board, sign);
     let opponent_sign = if sign == 'X' { 'O' } else { 'X' };
+    let mut opportunities: Vec<(usize, usize)> = Vec::new();
 
     for square in empty_squares {
         let attempted_board = board.add_value(square, opponent_sign);
         if fork_move(attempted_board.unwrap(), opponent_sign).is_some() {
-            return Some(square);
+            opportunities.push(square);
         }
     }
 
-    None
+    if opportunities.is_empty() {
+        None
+    } else {
+        // TODO: FIX THIS NASTY THING
+        let first_opp = opportunities.clone();
+        let second_opp = opportunities.clone();
+
+        for opportunity in opportunities {
+            if opportunity == (1, 1) {
+                return Some(opportunity);
+            }
+        }
+
+        for opportunity in first_opp {
+            if opportunity == (0, 0) || opportunity == (0, 2) || opportunity == (2, 0)
+                || opportunity == (2, 2)
+            {
+                return Some(opportunity);
+            }
+        }
+
+        Some(second_opp[0])
+    }
 }
 
 fn fork_move(board: Board, sign: char) -> Option<(usize, usize)> {
     let empty_squares: Vec<(usize, usize)> = get_empty_squares(board, sign);
 
     for square in empty_squares {
-        let attempted_grid = board.add_value(square, sign);
-        if two_winning_moves(attempted_grid.unwrap(), sign) {
+        let attempted_grid = board.add_value(square, sign).unwrap();
+        if two_winning_moves(attempted_grid, sign) {
             return Some(square);
         }
     }
@@ -176,7 +199,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn one_winning_move_is_not_two_winning_moves() {
         let grid = [['O', '-', '-'], ['O', '-', '-'], ['-', '-', '-']];
         assert_eq!(two_winning_moves(Board { grid }, 'O'), false);
@@ -264,7 +286,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn take_center_when_possible() {
         let player = RobotPlayer { sign: 'O' };
         let grid = [['X', '-', '-'], ['-', '-', '-'], ['-', '-', '-']];
@@ -273,7 +294,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn takes_corner_when_possible() {
         let player = RobotPlayer { sign: 'O' };
         let grid = [['-', '-', '-'], ['-', 'X', '-'], ['-', '-', '-']];
