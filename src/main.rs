@@ -8,6 +8,7 @@ use win_condition::is_winning_board;
 use players::Player;
 use user_input::get_coordinate_from_user;
 use robot_player::get_robot_coordinate;
+use board::Board;
 
 fn main() {
     let player_one = Player {
@@ -26,7 +27,7 @@ fn main() {
 }
 
 struct Game {
-    board: board::Board,
+    board: Board,
     players: (Player, Player),
     current_player: Player,
     is_over: bool,
@@ -34,7 +35,7 @@ struct Game {
 
 impl Game {
     fn new(players: (Player, Player)) -> Game {
-        let board = board::Board::new();
+        let board = Board::new();
         let current_player = players.0;
         let players = players;
         let is_over = false;
@@ -49,7 +50,7 @@ impl Game {
     fn next_turn(&self) -> Self {
         Game {
             board: self.board,
-            is_over: is_winning_board(self.board),
+            is_over: is_winning_board(self.board) || is_full_board(self.board),
             players: self.players,
             current_player: if self.current_player == self.players.0 {
                 self.players.1
@@ -61,6 +62,7 @@ impl Game {
 
     fn play(&self) {
         if self.is_over {
+            // TODO: Add information about winner or if tie
             println!("Game over");
         } else {
             match (self.current_player.get_coordinate)(self.current_player.sign, self.board) {
@@ -88,7 +90,6 @@ impl Game {
                     println!("{}", e);
                     println!("{}", self.board);
 
-                    // TODO: Check if board is full
                     self.play();
                 }
             }
@@ -96,8 +97,20 @@ impl Game {
     }
 }
 
+// TODO: fix this ugly function
+fn is_full_board(board: Board) -> bool {
+    for row in board.grid.iter() {
+        for element in row.iter() {
+            if element == &'-' {
+                return false;
+            }
+        }
+    }
+    true
+}
+
 #[cfg(test)]
-mod game_tests {
+mod tests {
     use super::*;
     use board::Board;
 
@@ -106,9 +119,33 @@ mod game_tests {
     }
 
     #[test]
+    fn full_board_is_full() {
+        let board = Board {
+            grid: [['X'; 3], ['X'; 3], ['X'; 3]],
+        };
+        assert!(is_full_board(board));
+    }
+
+    #[test]
+    fn empty_board_is_not_full() {
+        let board = Board {
+            grid: [['-'; 3], ['-'; 3], ['-'; 3]],
+        };
+        assert!(!is_full_board(board));
+    }
+
+    #[test]
+    fn slightly_populated_board_is_not_full() {
+        let board = Board {
+            grid: [['-', 'X', 'O'], ['-', '-', '-'], ['O', '-', 'X']],
+        };
+        assert!(!is_full_board(board));
+    }
+
+    #[test]
     fn add_value_in_empty_field_adds_value() {
         let sign = 'X';
-        let board = board::Board::new();
+        let board = Board::new();
         let player = Player {
             sign,
             get_coordinate: dummy_get_coordinate,
@@ -120,7 +157,7 @@ mod game_tests {
     #[test]
     fn add_value_with_custom_sign_uses_sign() {
         let sign = 'A';
-        let board = board::Board::new();
+        let board = Board::new();
         let player = Player {
             sign,
             get_coordinate: dummy_get_coordinate,
@@ -131,7 +168,7 @@ mod game_tests {
 
     #[test]
     fn add_value_outside_of_bounds_is_invalid() {
-        let board = board::Board::new();
+        let board = Board::new();
 
         let player = Player {
             sign: 'X',
@@ -144,7 +181,7 @@ mod game_tests {
 
     #[test]
     fn add_value_to_existing_field_is_invalid() {
-        let board = board::Board {
+        let board = Board {
             grid: [['X'; 3], ['-'; 3], ['-'; 3]],
         };
 
