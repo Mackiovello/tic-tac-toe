@@ -87,6 +87,8 @@ impl Game {
                 Err(e) => {
                     println!("{}", e);
                     println!("{}", self.board);
+
+                    // TODO: Check if board is full
                     self.play();
                 }
             }
