@@ -41,47 +41,44 @@ mod win_condition_tests {
 
     #[test]
     fn empty_board_is_no_win() {
-        assert_eq!(
-            is_winning_grid(Board {
-                grid: [['-'; 3]; 3],
-            }),
-            false
-        );
+        assert!(!is_winning_grid(Board {
+            grid: [['-'; 3]; 3],
+        }));
     }
 
     #[test]
     fn complete_row_is_win() {
         let grid = [['O'; 3], ['-'; 3], ['-'; 3]];
-        assert_eq!(is_winning_grid(Board { grid }), true);
+        assert!(is_winning_grid(Board { grid }));
     }
 
     #[test]
     fn diagonal_is_win() {
         let grid = [['O', '-', '-'], ['-', 'O', '-'], ['-', '-', 'O']];
-        assert_eq!(is_winning_grid(Board { grid }), true);
+        assert!(is_winning_grid(Board { grid }));
     }
 
     #[test]
     fn complete_column_is_win() {
         let grid = [['O', '-', '-'], ['O', '-', '-'], ['O', '-', '-']];
-        assert_eq!(is_winning_grid(Board { grid }), true);
+        assert!(is_winning_grid(Board { grid }));
     }
 
     #[test]
     fn combined_row_is_no_win() {
         let grid = [['O', 'X', 'X'], ['-', '-', '-'], ['-', '-', '-']];
-        assert_eq!(is_winning_grid(Board { grid }), false);
+        assert!(!is_winning_grid(Board { grid }));
     }
 
     #[test]
     fn combined_column_is_no_win() {
         let grid = [['O', '-', '-'], ['X', '-', '-'], ['O', '-', '-']];
-        assert_eq!(is_winning_grid(Board { grid }), false);
+        assert!(!is_winning_grid(Board { grid }));
     }
 
     #[test]
     fn combined_diagonal_is_no_win() {
         let grid = [['O', '-', '-'], ['-', 'X', '-'], ['-', '-', 'O']];
-        assert_eq!(is_winning_grid(Board { grid }), false);
+        assert!(!is_winning_grid(Board { grid }));
     }
 }
