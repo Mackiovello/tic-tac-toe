@@ -34,17 +34,32 @@ impl Player for RobotPlayer {
             return Ok(fork_coordinate);
         }
 
-        if let Some(block_fork_coordinate) = block_fork_move(board, self.sign) {
+        if let Some(block_fork_coordinate) = fork_move(board, self.get_opponent_sign()) {
             return Ok(block_fork_coordinate);
+        }
+
+        if let Some(block_fork_opportunity_coordinate) =
+            block_fork_opportunity_move(board, self.sign)
+        {
+            return Ok(block_fork_opportunity_coordinate);
         }
 
         Err("No choice found".to_string())
     }
 }
 
-fn block_fork_move(board: Board, sign: char) -> Option<(usize, usize)> {
+fn block_fork_opportunity_move(board: Board, sign: char) -> Option<(usize, usize)> {
+    let empty_squares: Vec<(usize, usize)> = get_empty_squares(board, sign);
     let opponent_sign = if sign == 'X' { 'O' } else { 'X' };
-    fork_move(board, opponent_sign)
+
+    for square in empty_squares {
+        let attempted_board = board.add_value(square, opponent_sign);
+        if fork_move(attempted_board.unwrap(), opponent_sign).is_some() {
+            return Some(square);
+        }
+    }
+
+    None
 }
 
 fn fork_move(board: Board, sign: char) -> Option<(usize, usize)> {
@@ -145,7 +160,7 @@ fn get_winning_diagonal_coordinate(board: Board, sign: char) -> Option<(usize, u
 }
 
 #[cfg(test)]
-mod board_analysis_tests {
+mod tests {
     use super::*;
 
     #[test]
@@ -166,11 +181,6 @@ mod board_analysis_tests {
         let grid = [['O', '-', '-'], ['O', '-', '-'], ['-', '-', '-']];
         assert_eq!(two_winning_moves(Board { grid }, 'O'), false);
     }
-}
-
-#[cfg(test)]
-mod robot_player_tests {
-    use super::{Board, Player, RobotPlayer};
 
     #[test]
     fn creates_winning_row_if_available() {
@@ -245,13 +255,12 @@ mod robot_player_tests {
     }
 
     #[test]
-    #[ignore]
     fn prevents_fork_opportunity_if_no_win_or_block() {
         let player = RobotPlayer { sign: 'O' };
         let grid = [['X', '-', '-'], ['-', 'O', '-'], ['-', '-', 'X']];
         let coordinate = player.get_coordinate(Board { grid }).unwrap();
-        let good_choices: Vec<(usize, usize)> = vec![(0, 1), (1, 0), (1, 2), (2, 1)];
-        assert_eq!(good_choices.iter().any(|x| *x == coordinate), true);
+        let good_choices: Vec<(usize, usize)> = vec![(0, 2), (2, 0)];
+        assert!(good_choices.iter().any(|x| *x == coordinate));
     }
 
     #[test]
