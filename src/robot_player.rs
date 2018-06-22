@@ -76,24 +76,21 @@ fn block_fork_opportunity_move(board: Board, sign: char) -> Option<(usize, usize
     if opportunities.is_empty() {
         None
     } else {
-        let first_opp = opportunities.clone();
-        let second_opp = opportunities.clone();
-
-        for opportunity in opportunities {
-            if opportunity == (1, 1) {
-                return Some(opportunity);
+        for opportunity in &opportunities {
+            if *opportunity == (1, 1) {
+                return Some(*opportunity);
             }
         }
 
-        for opportunity in first_opp {
-            if opportunity == (0, 0) || opportunity == (0, 2) || opportunity == (2, 0)
-                || opportunity == (2, 2)
+        for opportunity in &opportunities {
+            if *opportunity == (0, 0) || *opportunity == (0, 2) || *opportunity == (2, 0)
+                || *opportunity == (2, 2)
             {
-                return Some(opportunity);
+                return Some(*opportunity);
             }
         }
 
-        Some(second_opp[0])
+        Some(opportunities[0])
     }
 }
 
