@@ -1,41 +1,32 @@
 use board::Board;
 
 pub fn get_robot_coordinate(sign: char, board: Board) -> Result<(usize, usize), String> {
-    let opponent_sign = if sign == 'X' { 'O' } else { 'X' };
+    let possible_moves: Vec<Box<Fn(Board, char) -> Option<(usize, usize)>>> = vec!(
+        Box::new(winning_move),
+        Box::new(block_winning_move),
+        Box::new(fork_move),
+        Box::new(block_fork_move),
+        Box::new(block_fork_opportunity_move),
+        Box::new(take_center_move),
+        Box::new(take_corner_move),
+        Box::new(take_side_move)
+    );
 
-    if let Some(winning_coordinate) = winning_move(board, sign) {
-        return Ok(winning_coordinate);
-    }
-
-    if let Some(blocking_coordinate) = winning_move(board, opponent_sign) {
-        return Ok(blocking_coordinate);
-    }
-
-    if let Some(fork_coordinate) = fork_move(board, sign) {
-        return Ok(fork_coordinate);
-    }
-
-    if let Some(block_fork_coordinate) = fork_move(board, opponent_sign) {
-        return Ok(block_fork_coordinate);
-    }
-
-    if let Some(block_fork_opportunity_coordinate) = block_fork_opportunity_move(board, sign) {
-        return Ok(block_fork_opportunity_coordinate);
-    }
-
-    if let Some(center_coordinate) = take_center_move(board, sign) {
-        return Ok(center_coordinate);
-    }
-
-    if let Some(corner_coordinate) = take_corner_move(board, sign) {
-        return Ok(corner_coordinate);
-    }
-
-    if let Some(side_coordinate) = take_side_move(board, sign) {
-        return Ok(side_coordinate);
+    for possible_move in possible_moves {
+        if let Some(chosen_coordinate) = possible_move(board, sign) {
+            return Ok(chosen_coordinate);
+        }
     }
 
     Err("No choice found".to_string())
+}
+
+fn block_winning_move(board: Board, sign: char) -> Option<(usize, usize)> {
+    winning_move(board, get_opponent_sign(sign))
+}
+
+fn block_fork_move(board: Board, sign: char) -> Option<(usize, usize)> {
+    fork_move(board, get_opponent_sign(sign))
 }
 
 fn take_center_move(board: Board, _sign: char) -> Option<(usize, usize)> {
@@ -72,7 +63,7 @@ fn take_side_move(board: Board, sign: char) -> Option<(usize, usize)> {
 
 fn block_fork_opportunity_move(board: Board, sign: char) -> Option<(usize, usize)> {
     let empty_squares: Vec<(usize, usize)> = get_empty_squares(board, sign);
-    let opponent_sign = if sign == 'X' { 'O' } else { 'X' };
+    let opponent_sign = get_opponent_sign(sign);
     let mut opportunities: Vec<(usize, usize)> = Vec::new();
 
     for square in empty_squares {
@@ -85,7 +76,6 @@ fn block_fork_opportunity_move(board: Board, sign: char) -> Option<(usize, usize
     if opportunities.is_empty() {
         None
     } else {
-        // TODO: FIX THIS NASTY THING
         let first_opp = opportunities.clone();
         let second_opp = opportunities.clone();
 
@@ -107,6 +97,10 @@ fn block_fork_opportunity_move(board: Board, sign: char) -> Option<(usize, usize
     }
 }
 
+fn get_opponent_sign(sign: char) -> char {
+    if sign == 'X' { 'O' } else { 'X' }
+}
+
 fn fork_move(board: Board, sign: char) -> Option<(usize, usize)> {
     let empty_squares: Vec<(usize, usize)> = get_empty_squares(board, sign);
 
@@ -121,10 +115,9 @@ fn fork_move(board: Board, sign: char) -> Option<(usize, usize)> {
 }
 
 fn two_winning_moves(board: Board, sign: char) -> bool {
-    let opponent_sign = if sign == 'X' { 'O' } else { 'X' };
     match winning_move(board, sign) {
         Some(coordinate) => {
-            let attempted_grid = board.add_value(coordinate, opponent_sign);
+            let attempted_grid = board.add_value(coordinate, get_opponent_sign(sign));
 
             winning_move(attempted_grid.unwrap(), sign).is_some()
         }

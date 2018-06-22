@@ -21,6 +21,7 @@ fn main() {
         get_coordinate: get_robot_coordinate,
     };
 
+    println!("You are player '{}'", player_one.sign);
     let game = Game::new((player_one, player_two));
 
     game.play();
@@ -62,51 +63,55 @@ impl Game {
 
     fn play(&self) {
         if self.is_over {
-            // TODO: Add information about winner or if tie
             println!("Game over");
+            println!("{}", self.get_final_message());
         } else {
             match (self.current_player.get_coordinate)(self.current_player.sign, self.board) {
-                Ok(coordinate) => {
-                    match self.board.add_value(coordinate, self.current_player.sign) {
-                        Ok(b) => {
-                            let new_game = Game {
-                                board: b,
-                                players: self.players,
-                                is_over: self.is_over,
-                                current_player: self.current_player,
-                            };
-                            let new_game = new_game.next_turn();
-                            println!("{}", new_game.board);
-                            new_game.play();
-                        }
-                        Err(e) => {
-                            println!("{}", e);
-                            println!("{}", self.board);
-                            self.play();
-                        }
-                    }
-                }
-                Err(e) => {
-                    println!("{}", e);
-                    println!("{}", self.board);
-
-                    self.play();
-                }
+                Ok(coordinate) => self.place_choice(coordinate),            
+                Err(e) => self.print_error_and_play(e)
             }
+        }
+    }
+
+    fn print_error_and_play(&self, error: String) {
+        println!("{}", error);
+        println!("{}", self.board);
+        self.play();
+    }
+
+    fn place_choice(&self, coordinate: (usize, usize)) {
+        match self.board.add_value(coordinate, self.current_player.sign) {
+            Ok(b) => {
+                let new_game = Game {
+                    board: b,
+                    players: self.players,
+                    is_over: self.is_over,
+                    current_player: self.current_player,
+                };
+                let new_game = new_game.next_turn();
+                println!("\nBoard after player {}'s turn:\n", self.current_player.sign);
+                println!("{}", new_game.board);
+                new_game.play();
+            }
+            Err(e) => self.print_error_and_play(e)
+        }
+    }
+
+    fn get_final_message(&self) -> String {
+        if is_winning_board(self.board) {
+            let winner = if self.current_player.sign == 'O' { 'X' } else { 'O' };
+            format!("Player {} won!", winner)
+        } else {
+            "It's a tie!".to_string()
         }
     }
 }
 
-// TODO: fix this ugly function
 fn is_full_board(board: Board) -> bool {
-    for row in board.grid.iter() {
-        for element in row.iter() {
-            if element == &'-' {
-                return false;
-            }
-        }
-    }
-    true
+    !board.grid.iter()
+        .flat_map(|r| r.iter())
+        .collect::<Vec<&char>>()
+        .contains(&&'-')
 }
 
 #[cfg(test)]

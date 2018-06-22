@@ -18,8 +18,8 @@ fn parse_user_input(input: String) -> Result<(usize, usize), String> {
         return Err("You have to pass two values".to_string());
     }
 
-    let x_result = vec[1].trim().parse::<usize>();
-    let y_result = vec[0].trim().parse::<usize>();
+    let x_result = vec[0].trim().parse::<usize>();
+    let y_result = vec[1].trim().parse::<usize>();
 
     if x_result.is_ok() && y_result.is_ok() {
         let x = x_result.unwrap();
