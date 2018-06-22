@@ -1,7 +1,9 @@
 use board::Board;
 
-pub fn get_robot_coordinate(sign: char, board: Board) -> Result<(usize, usize), String> {
-    let possible_moves: Vec<Box<Fn(Board, char) -> Option<(usize, usize)>>> = vec!(
+type Coordinate = (usize, usize);
+
+pub fn get_robot_coordinate(sign: char, board: Board) -> Result<Coordinate, String> {
+    let possible_moves: Vec<Box<Fn(Board, char) -> Option<Coordinate>>> = vec!(
         Box::new(winning_move),
         Box::new(block_winning_move),
         Box::new(fork_move),
@@ -21,15 +23,15 @@ pub fn get_robot_coordinate(sign: char, board: Board) -> Result<(usize, usize), 
     Err("No choice found".to_string())
 }
 
-fn block_winning_move(board: Board, sign: char) -> Option<(usize, usize)> {
+fn block_winning_move(board: Board, sign: char) -> Option<Coordinate> {
     winning_move(board, get_opponent_sign(sign))
 }
 
-fn block_fork_move(board: Board, sign: char) -> Option<(usize, usize)> {
+fn block_fork_move(board: Board, sign: char) -> Option<Coordinate> {
     fork_move(board, get_opponent_sign(sign))
 }
 
-fn take_center_move(board: Board, _sign: char) -> Option<(usize, usize)> {
+fn take_center_move(board: Board, _sign: char) -> Option<Coordinate> {
     if board.grid[1][1] == '-' {
         Some((1, 1))
     } else {
@@ -37,8 +39,8 @@ fn take_center_move(board: Board, _sign: char) -> Option<(usize, usize)> {
     }
 }
 
-fn take_corner_move(board: Board, sign: char) -> Option<(usize, usize)> {
-    let empty_squares: Vec<(usize, usize)> = get_empty_squares(board, sign);
+fn take_corner_move(board: Board, sign: char) -> Option<Coordinate> {
+    let empty_squares: Vec<Coordinate> = get_empty_squares(board, sign);
 
     for square in empty_squares {
         if square == (0, 0) || square == (0, 2) || square == (2, 0) || square == (2, 2) {
@@ -49,8 +51,8 @@ fn take_corner_move(board: Board, sign: char) -> Option<(usize, usize)> {
     None
 }
 
-fn take_side_move(board: Board, sign: char) -> Option<(usize, usize)> {
-    let empty_squares: Vec<(usize, usize)> = get_empty_squares(board, sign);
+fn take_side_move(board: Board, sign: char) -> Option<Coordinate> {
+    let empty_squares: Vec<Coordinate> = get_empty_squares(board, sign);
 
     for square in empty_squares {
         if square == (1, 0) || square == (0, 1) || square == (2, 1) || square == (1, 2) {
@@ -61,10 +63,10 @@ fn take_side_move(board: Board, sign: char) -> Option<(usize, usize)> {
     None
 }
 
-fn block_fork_opportunity_move(board: Board, sign: char) -> Option<(usize, usize)> {
-    let empty_squares: Vec<(usize, usize)> = get_empty_squares(board, sign);
+fn block_fork_opportunity_move(board: Board, sign: char) -> Option<Coordinate> {
+    let empty_squares: Vec<Coordinate> = get_empty_squares(board, sign);
     let opponent_sign = get_opponent_sign(sign);
-    let mut opportunities: Vec<(usize, usize)> = Vec::new();
+    let mut opportunities: Vec<Coordinate> = Vec::new();
 
     for square in empty_squares {
         let attempted_board = board.add_value(square, opponent_sign);
@@ -98,8 +100,8 @@ fn get_opponent_sign(sign: char) -> char {
     if sign == 'X' { 'O' } else { 'X' }
 }
 
-fn fork_move(board: Board, sign: char) -> Option<(usize, usize)> {
-    let empty_squares: Vec<(usize, usize)> = get_empty_squares(board, sign);
+fn fork_move(board: Board, sign: char) -> Option<Coordinate> {
+    let empty_squares: Vec<Coordinate> = get_empty_squares(board, sign);
 
     for square in empty_squares {
         let attempted_grid = board.add_value(square, sign).unwrap();
@@ -122,8 +124,8 @@ fn two_winning_moves(board: Board, sign: char) -> bool {
     }
 }
 
-fn get_empty_squares(board: Board, _sign: char) -> Vec<(usize, usize)> {
-    let mut empty_squares: Vec<(usize, usize)> = Vec::new();
+fn get_empty_squares(board: Board, _sign: char) -> Vec<Coordinate> {
+    let mut empty_squares: Vec<Coordinate> = Vec::new();
 
     for (y, row) in board.grid.iter().enumerate() {
         for (x, value) in row.iter().enumerate() {
@@ -135,7 +137,7 @@ fn get_empty_squares(board: Board, _sign: char) -> Vec<(usize, usize)> {
     empty_squares
 }
 
-fn winning_move(board: Board, sign: char) -> Option<(usize, usize)> {
+fn winning_move(board: Board, sign: char) -> Option<Coordinate> {
     let winning_coordinate_functions = [
         get_winning_row_coordinate,
         get_winning_column_coordinate,
@@ -151,7 +153,7 @@ fn winning_move(board: Board, sign: char) -> Option<(usize, usize)> {
     None
 }
 
-fn get_winning_row_coordinate(board: Board, sign: char) -> Option<(usize, usize)> {
+fn get_winning_row_coordinate(board: Board, sign: char) -> Option<Coordinate> {
     for (y, row) in board.grid.iter().enumerate() {
         let empty_value = row.clone().iter().position(|s| *s == '-');
 
@@ -162,7 +164,7 @@ fn get_winning_row_coordinate(board: Board, sign: char) -> Option<(usize, usize)
     None
 }
 
-fn get_winning_column_coordinate(board: Board, sign: char) -> Option<(usize, usize)> {
+fn get_winning_column_coordinate(board: Board, sign: char) -> Option<Coordinate> {
     let transposed = board.transpose();
 
     match get_winning_row_coordinate(transposed, sign) {
@@ -171,7 +173,7 @@ fn get_winning_column_coordinate(board: Board, sign: char) -> Option<(usize, usi
     }
 }
 
-fn get_winning_diagonal_coordinate(board: Board, sign: char) -> Option<(usize, usize)> {
+fn get_winning_diagonal_coordinate(board: Board, sign: char) -> Option<Coordinate> {
     let mut top_bottom_diagonal: Vec<char> = Vec::new();
     let mut bottom_top_diagonal: Vec<char> = Vec::new();
     for x in 0..3 {
@@ -283,7 +285,7 @@ mod tests {
     fn prevents_fork_opportunity_if_no_win_or_block() {
         let grid = [['X', '-', '-'], ['-', 'O', '-'], ['-', '-', 'X']];
         let coordinate = get_robot_coordinate('O', Board { grid }).unwrap();
-        let good_choices: Vec<(usize, usize)> = vec![(0, 2), (2, 0)];
+        let good_choices: Vec<Coordinate> = vec![(0, 2), (2, 0)];
         assert!(good_choices.iter().any(|x| *x == coordinate));
     }
 
@@ -298,7 +300,7 @@ mod tests {
     fn takes_corner_when_possible() {
         let grid = [['-', '-', '-'], ['-', 'X', '-'], ['-', '-', '-']];
         let coordinate = get_robot_coordinate('O', Board { grid }).unwrap();
-        let good_choices: Vec<(usize, usize)> = vec![(0, 0), (2, 0), (2, 2), (0, 2)];
+        let good_choices: Vec<Coordinate> = vec![(0, 0), (2, 0), (2, 2), (0, 2)];
         assert_eq!(good_choices.iter().any(|x| *x == coordinate), true);
     }
 
