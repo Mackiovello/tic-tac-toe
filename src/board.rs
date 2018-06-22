@@ -18,9 +18,6 @@ impl Board {
         }
     }
 
-    // TODO: There's something weird going on with the x and y
-    // Write some tests with different x and y values and check that
-    // it works
     pub fn add_value(&self, coordinate: (usize, usize), sign: char) -> Result<Board, String> {
         if coordinate.0 > 2 || coordinate.1 > 2 {
             return Err("The field is out of bounds".to_string());
