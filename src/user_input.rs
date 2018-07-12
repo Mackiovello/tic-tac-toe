@@ -1,13 +1,13 @@
-use std::io::{self, BufRead};
 use board::Board;
+use std::io::{self, BufRead};
 
 pub fn get_coordinate_from_user(_sign: char, _board: Board) -> Result<(usize, usize), String> {
     println!("Enter a coordinate in the format x,y:");
     let input = read_line();
-    parse_user_input(input)
+    parse_user_input(&input)
 }
 
-fn parse_user_input(input: String) -> Result<(usize, usize), String> {
+fn parse_user_input(input: &str) -> Result<(usize, usize), String> {
     if input.trim().is_empty() {
         return Err("The input can't be empty".to_string());
     }
@@ -48,49 +48,49 @@ mod input_parsing_tests {
 
     #[test]
     fn empty_string_gives_error() {
-        let result = parse_user_input(String::from(""));
+        let result = parse_user_input("");
         assert_eq!(result.is_err(), true);
     }
 
     #[test]
     fn whitespace_gives_error() {
-        let result = parse_user_input(String::from(" "));
+        let result = parse_user_input(" ");
         assert_eq!(result.is_err(), true);
     }
 
     #[test]
     fn comma_with_space_works() {
-        let result = parse_user_input(String::from("1, 1"));
+        let result = parse_user_input("1, 1");
         assert_eq!(result.unwrap(), (1, 1));
     }
 
     #[test]
     fn comma_without_space_works() {
-        let result = parse_user_input(String::from("1,1"));
+        let result = parse_user_input("1,1");
         assert_eq!(result.unwrap(), (1, 1));
     }
 
     #[test]
     fn too_many_values_gives_error() {
-        let result = parse_user_input(String::from("1,1,1"));
+        let result = parse_user_input("1,1,1");
         assert_eq!(result.is_err(), true);
     }
 
     #[test]
     fn negative_values_give_error() {
-        let result = parse_user_input(String::from("-1,1"));
+        let result = parse_user_input("-1,1");
         assert_eq!(result.is_err(), true);
     }
 
     #[test]
     fn too_large_values_give_error() {
-        let result = parse_user_input(String::from("3,5"));
+        let result = parse_user_input("3,5");
         assert_eq!(result.is_err(), true);
     }
 
     #[test]
     fn only_one_value_give_error() {
-        let result = parse_user_input(String::from("1"));
+        let result = parse_user_input("1");
         assert_eq!(result.is_err(), true);
     }
 }

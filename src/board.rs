@@ -27,7 +27,7 @@ impl Board {
             return Err("The field is already taken".to_string());
         }
 
-        let mut new_board = self.clone();
+        let mut new_board = *self;
         new_board.grid[coordinate.1][coordinate.0] = sign;
         Ok(new_board)
     }
@@ -46,7 +46,8 @@ fn transpose_grid(grid: [[char; 3]; 3]) -> [[char; 3]; 3] {
 
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let values = self.grid
+        let values = self
+            .grid
             .iter()
             .flat_map(|a| a.iter())
             .cloned()

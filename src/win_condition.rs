@@ -1,7 +1,7 @@
 extern crate itertools;
 
-use win_condition::itertools::Itertools;
 use board::Board;
+use win_condition::itertools::Itertools;
 
 pub fn is_winning_board(board: Board) -> bool {
     is_column_win(board) || is_row_win(board) || is_diagonal_win(board)
@@ -15,11 +15,11 @@ fn is_diagonal_win(board: Board) -> bool {
         left_diagonal.push(board.grid[x][2 - x]);
     }
 
-    unique_non_empty_row(right_diagonal) || unique_non_empty_row(left_diagonal)
+    unique_non_empty_row(&right_diagonal) || unique_non_empty_row(&left_diagonal)
 }
 
-fn unique_non_empty_row(row: Vec<char>) -> bool {
-    row.clone().into_iter().unique().count() == 1 && row[0] != '-'
+fn unique_non_empty_row(row: &[char]) -> bool {
+    row.into_iter().unique().count() == 1 && row[0] != '-'
 }
 
 fn is_column_win(board: Board) -> bool {
@@ -31,7 +31,7 @@ fn is_row_win(board: Board) -> bool {
     board
         .grid
         .iter()
-        .filter(|x| unique_non_empty_row(x.to_vec()))
+        .filter(|x| unique_non_empty_row(*x))
         .count() > 0
 }
 

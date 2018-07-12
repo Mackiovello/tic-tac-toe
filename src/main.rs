@@ -68,12 +68,12 @@ impl Game {
         } else {
             match (self.current_player.get_coordinate)(self.current_player.sign, self.board) {
                 Ok(coordinate) => self.place_choice(coordinate),
-                Err(e) => self.print_error_and_play(e),
+                Err(e) => self.print_error_and_play(&e),
             }
         }
     }
 
-    fn print_error_and_play(&self, error: String) {
+    fn print_error_and_play(&self, error: &str) {
         println!("{}", error);
         println!("{}", self.board);
         self.play();
@@ -91,7 +91,7 @@ impl Game {
                 println!("{}", new_game.board);
                 new_game.play();
             }
-            Err(e) => self.print_error_and_play(e),
+            Err(e) => self.print_error_and_play(&e),
         }
     }
 

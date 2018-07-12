@@ -1,9 +1,10 @@
 use board::Board;
 
 type Coordinate = (usize, usize);
+type MoveFunction = Vec<Box<Fn(Board, char) -> Option<Coordinate>>>;
 
 pub fn get_robot_coordinate(sign: char, board: Board) -> Result<Coordinate, String> {
-    let possible_moves: Vec<Box<Fn(Board, char) -> Option<Coordinate>>> = vec![
+    let possible_moves: MoveFunction = vec![
         Box::new(winning_move),
         Box::new(block_winning_move),
         Box::new(fork_move),
@@ -150,7 +151,7 @@ fn winning_move(board: Board, sign: char) -> Option<Coordinate> {
         get_winning_diagonal_coordinate,
     ];
 
-    for func in winning_coordinate_functions.iter() {
+    for func in &winning_coordinate_functions {
         if let Some(winning_coordinate) = func(board, sign) {
             return Some(winning_coordinate);
         };
