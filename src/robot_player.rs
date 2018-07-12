@@ -3,7 +3,7 @@ use board::Board;
 type Coordinate = (usize, usize);
 
 pub fn get_robot_coordinate(sign: char, board: Board) -> Result<Coordinate, String> {
-    let possible_moves: Vec<Box<Fn(Board, char) -> Option<Coordinate>>> = vec!(
+    let possible_moves: Vec<Box<Fn(Board, char) -> Option<Coordinate>>> = vec![
         Box::new(winning_move),
         Box::new(block_winning_move),
         Box::new(fork_move),
@@ -11,8 +11,8 @@ pub fn get_robot_coordinate(sign: char, board: Board) -> Result<Coordinate, Stri
         Box::new(block_fork_opportunity_move),
         Box::new(take_center_move),
         Box::new(take_corner_move),
-        Box::new(take_side_move)
-    );
+        Box::new(take_side_move),
+    ];
 
     for possible_move in possible_moves {
         if let Some(chosen_coordinate) = possible_move(board, sign) {
@@ -85,7 +85,9 @@ fn block_fork_opportunity_move(board: Board, sign: char) -> Option<Coordinate> {
         }
 
         for opportunity in &opportunities {
-            if *opportunity == (0, 0) || *opportunity == (0, 2) || *opportunity == (2, 0)
+            if *opportunity == (0, 0)
+                || *opportunity == (0, 2)
+                || *opportunity == (2, 0)
                 || *opportunity == (2, 2)
             {
                 return Some(*opportunity);
@@ -97,7 +99,11 @@ fn block_fork_opportunity_move(board: Board, sign: char) -> Option<Coordinate> {
 }
 
 fn get_opponent_sign(sign: char) -> char {
-    if sign == 'X' { 'O' } else { 'X' }
+    if sign == 'X' {
+        'O'
+    } else {
+        'X'
+    }
 }
 
 fn fork_move(board: Board, sign: char) -> Option<Coordinate> {

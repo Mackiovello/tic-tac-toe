@@ -1,14 +1,14 @@
-mod players;
-mod win_condition;
 mod board;
-mod user_input;
+mod players;
 mod robot_player;
+mod user_input;
+mod win_condition;
 
-use win_condition::is_winning_board;
-use players::Player;
-use user_input::get_coordinate_from_user;
-use robot_player::get_robot_coordinate;
 use board::Board;
+use players::Player;
+use robot_player::get_robot_coordinate;
+use user_input::get_coordinate_from_user;
+use win_condition::is_winning_board;
 
 fn main() {
     let player_one = Player {
@@ -67,8 +67,8 @@ impl Game {
             println!("{}", self.get_final_message());
         } else {
             match (self.current_player.get_coordinate)(self.current_player.sign, self.board) {
-                Ok(coordinate) => self.place_choice(coordinate),            
-                Err(e) => self.print_error_and_play(e)
+                Ok(coordinate) => self.place_choice(coordinate),
+                Err(e) => self.print_error_and_play(e),
             }
         }
     }
@@ -82,24 +82,26 @@ impl Game {
     fn place_choice(&self, coordinate: (usize, usize)) {
         match self.board.add_value(coordinate, self.current_player.sign) {
             Ok(b) => {
-                let new_game = Game {
-                    board: b,
-                    players: self.players,
-                    is_over: self.is_over,
-                    current_player: self.current_player,
-                };
+                let new_game = Game { board: b, ..*self };
                 let new_game = new_game.next_turn();
-                println!("\nBoard after player {}'s turn:\n", self.current_player.sign);
+                println!(
+                    "\nBoard after player {}'s turn:\n",
+                    self.current_player.sign
+                );
                 println!("{}", new_game.board);
                 new_game.play();
             }
-            Err(e) => self.print_error_and_play(e)
+            Err(e) => self.print_error_and_play(e),
         }
     }
 
     fn get_final_message(&self) -> String {
         if is_winning_board(self.board) {
-            let winner = if self.current_player.sign == 'O' { 'X' } else { 'O' };
+            let winner = if self.current_player.sign == 'O' {
+                'X'
+            } else {
+                'O'
+            };
             format!("Player {} won!", winner)
         } else {
             "It's a tie!".to_string()
@@ -108,7 +110,9 @@ impl Game {
 }
 
 fn is_full_board(board: Board) -> bool {
-    !board.grid.iter()
+    !board
+        .grid
+        .iter()
         .flat_map(|r| r.iter())
         .collect::<Vec<&char>>()
         .contains(&&'-')
