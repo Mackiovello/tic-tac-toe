@@ -1,6 +1,6 @@
 # Unbeatable tic-tac-toe
 
-[![Build Status](https://travis-ci.org/Mackiovello/tic-tac-toe.svg?branch=master)](https://travis-ci.org/Mackiovello/tic-tac-toe)
+[![Build Status](https://travis-ci.org/Mackiovello/unbeatable-tic-tac-toe.svg?branch=master)](https://travis-ci.org/Mackiovello/unbeatable-tic-tac-toe)
 
 Command-line tic-tac-toe against an unbeatable opponent in Rust.
 
